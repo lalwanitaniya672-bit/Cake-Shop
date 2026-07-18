@@ -1,5 +1,5 @@
 import { useEffect } from 'react'
-import { Routes, Route } from 'react-router-dom'
+import { Routes, Route, Navigate, useLocation } from 'react-router-dom'
 import ScrollToTop from './components/ScrollToTop'
 import Navbar from './components/Navbar'
 import Footer from './components/Footer'
@@ -19,16 +19,22 @@ import Cart from './pages/Cart'
 import Checkout from './pages/Checkout'
 import Reviews from './pages/Reviews'
 
-export default function App() {
-  const initialize = useAuthStore((s) => s.initialize)
-
-  useEffect(() => {
-    initialize()
-  }, [initialize])
-
+function AuthLoadingScreen() {
   return (
-    <div className="min-h-screen bg-cream">
-      <ScrollToTop />
+    <div className="min-h-screen bg-cream flex items-center justify-center">
+      <div className="text-center">
+        <div className="w-16 h-16 rounded-full bg-gradient-to-br from-rose to-gold flex items-center justify-center mx-auto mb-4 animate-pulse">
+          <span className="font-display text-white font-bold text-2xl">V</span>
+        </div>
+        <p className="text-warm-gray text-sm">Loading...</p>
+      </div>
+    </div>
+  )
+}
+
+function ProtectedRoutes() {
+  return (
+    <>
       <Navbar />
       <main>
         <Routes>
@@ -39,8 +45,6 @@ export default function App() {
           <Route path="/custom-orders" element={<CustomOrders />} />
           <Route path="/gallery" element={<Gallery />} />
           <Route path="/contact" element={<Contact />} />
-          <Route path="/login" element={<Login />} />
-          <Route path="/signup" element={<Signup />} />
           <Route path="/cart" element={<Cart />} />
           <Route path="/checkout" element={<Checkout />} />
           <Route path="/reviews" element={<Reviews />} />
@@ -60,6 +64,32 @@ export default function App() {
       </main>
       <Footer />
       <WhatsAppButton />
+    </>
+  )
+}
+
+export default function App() {
+  const initialize = useAuthStore((s) => s.initialize)
+  const user = useAuthStore((s) => s.user)
+  const loading = useAuthStore((s) => s.loading)
+  const location = useLocation()
+
+  useEffect(() => {
+    initialize()
+  }, [initialize])
+
+  if (loading) {
+    return <AuthLoadingScreen />
+  }
+
+  return (
+    <div className="min-h-screen bg-cream">
+      <ScrollToTop />
+      <Routes>
+        <Route path="/login" element={user ? <Navigate to="/" replace /> : <Login />} />
+        <Route path="/signup" element={user ? <Navigate to="/" replace /> : <Signup />} />
+        <Route path="/*" element={user ? <ProtectedRoutes /> : <Navigate to="/login" state={{ from: location.pathname }} replace />} />
+      </Routes>
     </div>
   )
 }

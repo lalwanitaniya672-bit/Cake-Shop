@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { Link, useNavigate } from 'react-router-dom'
+import { Link, useNavigate, useLocation } from 'react-router-dom'
 import { motion } from 'framer-motion'
 import { Mail, Lock, Eye, EyeOff, ArrowRight } from 'lucide-react'
 import useAuthStore from '../stores/authStore'
@@ -11,13 +11,21 @@ export default function Login() {
   const [loading, setLoading] = useState(false)
   const { signIn, signInWithGoogle, error, clearError } = useAuthStore()
   const navigate = useNavigate()
+  const location = useLocation()
+
+  const redirectTo = location.state?.from || '/'
 
   const handleSubmit = async (e) => {
     e.preventDefault()
     setLoading(true)
     const result = await signIn(email, password)
     setLoading(false)
-    if (!result.error) navigate('/')
+    if (!result.error) navigate(redirectTo, { replace: true })
+  }
+
+  const handleGoogleSignIn = async () => {
+    const result = await signInWithGoogle()
+    if (!result.error) navigate(redirectTo, { replace: true })
   }
 
   return (
@@ -140,7 +148,7 @@ export default function Login() {
           </div>
 
           <button
-            onClick={signInWithGoogle}
+            onClick={handleGoogleSignIn}
             className="w-full flex items-center justify-center gap-3 border border-cream-dark bg-white py-3 rounded-xl text-sm font-medium text-charcoal hover:bg-cream-dark/30 transition-colors"
           >
             <svg className="w-5 h-5" viewBox="0 0 24 24">

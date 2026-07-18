@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { Link, useNavigate } from 'react-router-dom'
+import { Link, useNavigate, useLocation } from 'react-router-dom'
 import { motion } from 'framer-motion'
 import { Mail, Lock, User, Eye, EyeOff, ArrowRight } from 'lucide-react'
 import useAuthStore from '../stores/authStore'
@@ -13,6 +13,9 @@ export default function Signup() {
   const [success, setSuccess] = useState(false)
   const { signUp, signInWithGoogle, error, clearError } = useAuthStore()
   const navigate = useNavigate()
+  const location = useLocation()
+
+  const redirectTo = location.state?.from || '/'
 
   const handleSubmit = async (e) => {
     e.preventDefault()
@@ -180,7 +183,10 @@ export default function Signup() {
           </div>
 
           <button
-            onClick={signInWithGoogle}
+            onClick={async () => {
+              const result = await signInWithGoogle()
+              if (!result.error) navigate(redirectTo, { replace: true })
+            }}
             className="w-full flex items-center justify-center gap-3 border border-cream-dark bg-white py-3 rounded-xl text-sm font-medium text-charcoal hover:bg-cream-dark/30 transition-colors"
           >
             <svg className="w-5 h-5" viewBox="0 0 24 24">
