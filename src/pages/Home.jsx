@@ -2,7 +2,7 @@ import { useState, useEffect, useCallback } from 'react'
 import { Link } from 'react-router-dom'
 import { motion, AnimatePresence } from 'framer-motion'
 import { ArrowRight, Star } from 'lucide-react'
-import { getFeaturedCakes } from '../data/cakes'
+import { supabase } from '../lib/supabase'
 import FadeInSection from '../components/FadeInSection'
 import StarRating from '../components/StarRating'
 
@@ -14,7 +14,8 @@ const heroSlides = [
 ]
 
 export default function Home() {
-  const featuredCakes = getFeaturedCakes()
+  const [featuredCakes, setFeaturedCakes] = useState([])
+  const [loading, setLoading] = useState(true)
   const [currentSlide, setCurrentSlide] = useState(0)
 
   const nextSlide = useCallback(() => {
@@ -30,11 +31,32 @@ export default function Home() {
     return () => clearInterval(timer)
   }, [nextSlide])
 
+  useEffect(() => {
+    fetchFeaturedCakes()
+  }, [])
+
+  const fetchFeaturedCakes = async () => {
+    try {
+      const { data, error } = await supabase
+        .from('cakes')
+        .select('*')
+        .eq('is_active', true)
+        .eq('is_featured', true)
+        .order('created_at', { ascending: false })
+        .limit(9)
+      if (error) throw error
+      setFeaturedCakes(data || [])
+    } catch (err) {
+      console.error('Fetch featured cakes error:', err)
+    } finally {
+      setLoading(false)
+    }
+  }
+
   return (
     <>
       {/* Hero - Fullscreen */}
       <section className="relative h-screen w-full overflow-hidden">
-        {/* Background Image Slider */}
         <div className="absolute inset-0">
           <AnimatePresence mode="wait">
             <motion.img
@@ -49,12 +71,9 @@ export default function Home() {
             />
           </AnimatePresence>
         </div>
-        {/* Dark Overlay */}
         <div className="absolute inset-0 bg-gradient-to-r from-black/70 via-black/50 to-black/30 backdrop-blur-[1px]" />
 
-        {/* Content - offset by navbar height (h-16 lg:h-20) */}
         <div className="relative z-10 flex flex-col items-center justify-center text-center px-6 sm:px-12 lg:px-16 h-full pt-16 lg:pt-20">
-          {/* Badge */}
           <motion.div
             initial={{ opacity: 0, y: -20 }}
             animate={{ opacity: 1, y: 0 }}
@@ -67,7 +86,6 @@ export default function Home() {
             </span>
           </motion.div>
 
-          {/* Title */}
           <motion.h1
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
@@ -80,7 +98,6 @@ export default function Home() {
             </span>
           </motion.h1>
 
-          {/* Welcome Message */}
           <motion.p
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
@@ -91,7 +108,6 @@ export default function Home() {
             cakes that transform your sweetest celebrations into unforgettable memories.
           </motion.p>
 
-          {/* CTA Buttons */}
           <motion.div
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
@@ -113,7 +129,6 @@ export default function Home() {
             </Link>
           </motion.div>
 
-          {/* Customer Trust */}
           <motion.div
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
@@ -156,71 +171,83 @@ export default function Home() {
             </p>
           </FadeInSection>
 
-          {/* Mobile Grid */}
-          <div className="grid grid-cols-2 gap-3 md:hidden">
-            {featuredCakes.map((cake) => (
-              <Link
-                key={cake.id}
-                to={`/cake/${cake.id}`}
-                className="group bg-card rounded-2xl overflow-hidden shadow-sm hover:shadow-lg transition-all duration-500 hover:-translate-y-1 block border border-cream-dark/30"
-              >
-                <div className="relative h-36 overflow-hidden">
-                  <img
-                    src={cake.image}
-                    alt={cake.name}
-                    className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110"
-                    loading="lazy"
-                  />
-                  {cake.badge && (
-                    <span className="absolute top-1.5 left-1.5 bg-gold text-white text-[8px] font-semibold uppercase tracking-wider px-2 py-0.5 rounded-full">
-                      {cake.badge}
-                    </span>
-                  )}
-                </div>
-                <div className="p-2.5 text-center">
-                  <h3 className="font-display text-[15px] font-bold text-chocolate group-hover:text-gold transition-colors duration-300 leading-tight line-clamp-1">
-                    {cake.name}
-                  </h3>
-                  <div className="flex justify-center mt-1.5">
-                    <span className="font-display text-[17px] font-bold text-chocolate">₹{cake.price}</span>
-                  </div>
-                </div>
-              </Link>
-            ))}
-          </div>
+          {loading ? (
+            <div className="flex items-center justify-center py-20">
+              <div className="w-8 h-8 border-2 border-gold/30 border-t-gold rounded-full animate-spin" />
+            </div>
+          ) : featuredCakes.length === 0 ? (
+            <div className="text-center py-20">
+              <p className="text-warm-gray">No featured cakes yet. Add some from the admin panel.</p>
+            </div>
+          ) : (
+            <>
+              {/* Mobile Grid */}
+              <div className="grid grid-cols-2 gap-3 md:hidden">
+                {featuredCakes.map((cake) => (
+                  <Link
+                    key={cake.id}
+                    to={`/cake/${cake.slug}`}
+                    className="group bg-card rounded-2xl overflow-hidden shadow-sm hover:shadow-lg transition-all duration-500 hover:-translate-y-1 block border border-cream-dark/30"
+                  >
+                    <div className="relative h-36 overflow-hidden">
+                      <img
+                        src={cake.image_url}
+                        alt={cake.name}
+                        className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110"
+                        loading="lazy"
+                      />
+                      {cake.badge && (
+                        <span className="absolute top-1.5 left-1.5 bg-gold text-white text-[8px] font-semibold uppercase tracking-wider px-2 py-0.5 rounded-full">
+                          {cake.badge}
+                        </span>
+                      )}
+                    </div>
+                    <div className="p-2.5 text-center">
+                      <h3 className="font-display text-[15px] font-bold text-chocolate group-hover:text-gold transition-colors duration-300 leading-tight line-clamp-1">
+                        {cake.name}
+                      </h3>
+                      <div className="flex justify-center mt-1.5">
+                        <span className="font-display text-[17px] font-bold text-chocolate">₹{cake.price}</span>
+                      </div>
+                    </div>
+                  </Link>
+                ))}
+              </div>
 
-          {/* Desktop Grid */}
-          <div className="hidden md:grid md:grid-cols-2 lg:grid-cols-3 gap-6">
-            {featuredCakes.map((cake) => (
-              <Link
-                key={cake.id}
-                to={`/cake/${cake.id}`}
-                className="group bg-card rounded-3xl overflow-hidden shadow-sm hover:shadow-xl transition-all duration-500 hover:-translate-y-2 block border border-cream-dark/30"
-              >
-                <div className="relative h-64 overflow-hidden">
-                  <img
-                    src={cake.image}
-                    alt={cake.name}
-                    className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110"
-                    loading="lazy"
-                  />
-                  {cake.badge && (
-                    <span className="absolute top-4 left-4 bg-gold text-white text-[10px] font-semibold uppercase tracking-wider px-3 py-1.5 rounded-full">
-                      {cake.badge}
-                    </span>
-                  )}
-                </div>
-                <div className="p-6 text-center">
-                  <span className="text-xs uppercase tracking-wider text-gold font-semibold">{cake.category}</span>
-                  <h3 className="font-display text-[28px] font-bold text-chocolate group-hover:text-gold transition-colors duration-300 leading-tight mt-1.5">
-                    {cake.name}
-                  </h3>
-                  <span className="font-display text-[28px] font-bold text-chocolate block mt-1">₹{cake.price}</span>
-                  <p className="text-[15px] text-charcoal/60 leading-relaxed mt-2">{cake.shortDescription}</p>
-                </div>
-              </Link>
-            ))}
-          </div>
+              {/* Desktop Grid */}
+              <div className="hidden md:grid md:grid-cols-2 lg:grid-cols-3 gap-6">
+                {featuredCakes.map((cake) => (
+                  <Link
+                    key={cake.id}
+                    to={`/cake/${cake.slug}`}
+                    className="group bg-card rounded-3xl overflow-hidden shadow-sm hover:shadow-xl transition-all duration-500 hover:-translate-y-2 block border border-cream-dark/30"
+                  >
+                    <div className="relative h-64 overflow-hidden">
+                      <img
+                        src={cake.image_url}
+                        alt={cake.name}
+                        className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110"
+                        loading="lazy"
+                      />
+                      {cake.badge && (
+                        <span className="absolute top-4 left-4 bg-gold text-white text-[10px] font-semibold uppercase tracking-wider px-3 py-1.5 rounded-full">
+                          {cake.badge}
+                        </span>
+                      )}
+                    </div>
+                    <div className="p-6 text-center">
+                      <span className="text-xs uppercase tracking-wider text-gold font-semibold">{cake.category}</span>
+                      <h3 className="font-display text-[28px] font-bold text-chocolate group-hover:text-gold transition-colors duration-300 leading-tight mt-1.5">
+                        {cake.name}
+                      </h3>
+                      <span className="font-display text-[28px] font-bold text-chocolate block mt-1">₹{cake.price}</span>
+                      <p className="text-[15px] text-charcoal/60 leading-relaxed mt-2">{cake.short_description}</p>
+                    </div>
+                  </Link>
+                ))}
+              </div>
+            </>
+          )}
 
           <FadeInSection className="text-center mt-8">
             <Link

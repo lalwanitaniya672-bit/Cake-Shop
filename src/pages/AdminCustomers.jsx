@@ -14,6 +14,8 @@ const sidebarLinks = [
   { to: '/admin/dashboard', label: 'Dashboard', icon: LayoutDashboard },
   { to: '/admin/orders', label: 'Orders', icon: ShoppingCart },
   { to: '/admin/cakes', label: 'Cakes', icon: Package },
+  { to: '/admin/categories', label: 'Categories', icon: Package },
+  { to: '/admin/flavors', label: 'Flavors', icon: Package },
   { to: '/admin/custom-orders', label: 'Custom Orders', icon: Package },
   { to: '/admin/customers', label: 'Customers', icon: Users },
   { to: '/admin/reviews', label: 'Reviews', icon: Star },

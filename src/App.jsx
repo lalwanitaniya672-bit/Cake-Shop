@@ -33,6 +33,8 @@ import AdminCustomOrders from './pages/AdminCustomOrders'
 import AdminCustomers from './pages/AdminCustomers'
 import AdminSettings from './pages/AdminSettings'
 import AdminReports from './pages/AdminReports'
+import AdminCategories from './pages/AdminCategories'
+import AdminFlavors from './pages/AdminFlavors'
 import SetupAdmin from './pages/SetupAdmin'
 
 function AuthLoadingScreen() {
@@ -118,6 +120,8 @@ export default function App() {
           <Route path="/admin/dashboard" element={<ProtectedAdminRoute><AdminDashboard /></ProtectedAdminRoute>} />
           <Route path="/admin/orders" element={<ProtectedAdminRoute><AdminOrders /></ProtectedAdminRoute>} />
           <Route path="/admin/cakes" element={<ProtectedAdminRoute><AdminCakes /></ProtectedAdminRoute>} />
+          <Route path="/admin/categories" element={<ProtectedAdminRoute><AdminCategories /></ProtectedAdminRoute>} />
+          <Route path="/admin/flavors" element={<ProtectedAdminRoute><AdminFlavors /></ProtectedAdminRoute>} />
           <Route path="/admin/reviews" element={<ProtectedAdminRoute><AdminReviews /></ProtectedAdminRoute>} />
           <Route path="/admin/messages" element={<ProtectedAdminRoute><AdminMessages /></ProtectedAdminRoute>} />
           <Route path="/admin/custom-orders" element={<ProtectedAdminRoute><AdminCustomOrders /></ProtectedAdminRoute>} />

@@ -1,16 +1,48 @@
-import { useState } from 'react'
+import { useState, useEffect, useMemo } from 'react'
 import { Link } from 'react-router-dom'
 import { motion, AnimatePresence } from 'framer-motion'
 import { Search, SlidersHorizontal, X } from 'lucide-react'
-import cakes, { categories } from '../data/cakes'
+import { supabase } from '../lib/supabase'
 import FadeInSection from '../components/FadeInSection'
-import StarRating from '../components/StarRating'
 
 export default function CakeCollection() {
+  const [cakes, setCakes] = useState([])
+  const [categories, setCategories] = useState([{ id: 'all', name: 'All Cakes', count: 0 }])
+  const [loading, setLoading] = useState(true)
   const [activeCategory, setActiveCategory] = useState('all')
   const [searchQuery, setSearchQuery] = useState('')
   const [sortBy, setSortBy] = useState('featured')
   const [showFilterSheet, setShowFilterSheet] = useState(false)
+
+  useEffect(() => {
+    fetchData()
+  }, [])
+
+  const fetchData = async () => {
+    try {
+      const [cakesRes, catsRes] = await Promise.all([
+        supabase.from('cakes').select('*').eq('is_active', true).order('created_at', { ascending: false }),
+        supabase.from('categories').select('*').eq('is_active', true).order('sort_order'),
+      ])
+      const allCakes = cakesRes.data || []
+      setCakes(allCakes)
+
+      const cats = catsRes.data || []
+      const categoryList = [
+        { id: 'all', name: 'All Cakes', count: allCakes.length },
+        ...cats.map(c => ({
+          id: c.name,
+          name: c.name,
+          count: allCakes.filter(k => k.category === c.name).length,
+        }))
+      ]
+      setCategories(categoryList)
+    } catch (err) {
+      console.error('Fetch error:', err)
+    } finally {
+      setLoading(false)
+    }
+  }
 
   let filtered = activeCategory === 'all'
     ? cakes
@@ -19,30 +51,24 @@ export default function CakeCollection() {
   if (searchQuery) {
     filtered = filtered.filter((c) =>
       c.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      c.description.toLowerCase().includes(searchQuery.toLowerCase())
+      (c.description && c.description.toLowerCase().includes(searchQuery.toLowerCase()))
     )
   }
 
   if (sortBy === 'price-low') filtered = [...filtered].sort((a, b) => a.price - b.price)
   if (sortBy === 'price-high') filtered = [...filtered].sort((a, b) => b.price - a.price)
-  if (sortBy === 'rating') filtered = [...filtered].sort((a, b) => b.rating - a.rating)
+  if (sortBy === 'rating') filtered = [...filtered].sort((a, b) => (b.rating || 0) - (a.rating || 0))
 
   return (
     <>
       {/* Hero */}
       <section className="relative pt-24 md:pt-32 pb-12 md:pb-16 overflow-hidden" style={{ background: 'linear-gradient(135deg, #6A4943 0%, #5A3A32 100%)' }}>
         <div className="absolute top-20 right-10 w-80 h-80 bg-gold/10 rounded-full blur-3xl" />
-
         <div className="relative max-w-7xl mx-auto px-4 md:px-6 lg:px-8 text-center">
-          <span className="text-xs font-medium text-gold uppercase tracking-[0.2em] mb-4 block">
-            Our Creations
-          </span>
-          <h1 className="font-display text-3xl md:text-5xl lg:text-6xl font-bold text-white mb-6">
-            Cake Collection
-          </h1>
+          <span className="text-xs font-medium text-gold uppercase tracking-[0.2em] mb-4 block">Our Creations</span>
+          <h1 className="font-display text-3xl md:text-5xl lg:text-6xl font-bold text-white mb-6">Cake Collection</h1>
           <p className="text-base md:text-lg text-white/70 max-w-2xl mx-auto">
-            From timeless wedding tiers to playful birthday showstoppers,
-            discover our curated collection of signature cakes.
+            From timeless wedding tiers to playful birthday showstoppers, discover our curated collection of signature cakes.
           </p>
         </div>
       </section>
@@ -50,7 +76,6 @@ export default function CakeCollection() {
       {/* Filters & Search */}
       <section className="py-3 md:py-6 sticky top-20 md:top-20 z-40 bg-cream border-b border-cream-dark/50">
         <div className="max-w-7xl mx-auto px-4 md:px-6 lg:px-8">
-          {/* Desktop Filters */}
           <div className="hidden md:flex items-center gap-4">
             <div className="flex gap-2 overflow-x-auto pb-2 scrollbar-hide flex-1">
               {categories.map((cat) => (
@@ -153,10 +178,7 @@ export default function CakeCollection() {
             >
               <div className="flex items-center justify-between p-4 border-b border-cream-dark">
                 <h3 className="font-display text-lg font-semibold text-chocolate">Filter by Category</h3>
-                <button
-                  onClick={() => setShowFilterSheet(false)}
-                  className="w-8 h-8 rounded-full bg-cream flex items-center justify-center"
-                >
+                <button onClick={() => setShowFilterSheet(false)} className="w-8 h-8 rounded-full bg-cream flex items-center justify-center">
                   <X className="w-4 h-4 text-chocolate" />
                 </button>
               </div>
@@ -165,10 +187,7 @@ export default function CakeCollection() {
                   {categories.map((cat) => (
                     <button
                       key={cat.id}
-                      onClick={() => {
-                        setActiveCategory(cat.id)
-                        setShowFilterSheet(false)
-                      }}
+                      onClick={() => { setActiveCategory(cat.id); setShowFilterSheet(false) }}
                       className={`px-4 py-3 rounded-xl text-sm font-medium text-left transition-all duration-300 ${
                         activeCategory === cat.id
                           ? 'bg-chocolate text-white shadow-md'
@@ -189,7 +208,11 @@ export default function CakeCollection() {
       {/* Grid */}
       <section className="py-16">
         <div className="max-w-7xl mx-auto px-4 md:px-6 lg:px-8">
-          {filtered.length === 0 ? (
+          {loading ? (
+            <div className="flex items-center justify-center py-20">
+              <div className="w-8 h-8 border-2 border-gold/30 border-t-gold rounded-full animate-spin" />
+            </div>
+          ) : filtered.length === 0 ? (
             <div className="text-center py-20">
               <div className="text-5xl mb-4">🎂</div>
               <h3 className="font-display text-xl font-semibold text-chocolate mb-2">No cakes found</h3>
@@ -202,12 +225,12 @@ export default function CakeCollection() {
                 {filtered.map((cake) => (
                   <Link
                     key={cake.id}
-                    to={`/cake/${cake.id}`}
+                    to={`/cake/${cake.slug}`}
                     className="group bg-card rounded-2xl overflow-hidden shadow-sm hover:shadow-lg transition-all duration-500 hover:-translate-y-1 h-full flex flex-col border border-cream-dark/30 cursor-pointer"
                   >
                     <div className="relative h-36 overflow-hidden">
                       <img
-                        src={cake.image}
+                        src={cake.image_url}
                         alt={cake.name}
                         className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110"
                         loading="lazy"
@@ -236,12 +259,12 @@ export default function CakeCollection() {
                 {filtered.map((cake) => (
                   <Link
                     key={cake.id}
-                    to={`/cake/${cake.id}`}
+                    to={`/cake/${cake.slug}`}
                     className="group bg-card rounded-3xl overflow-hidden shadow-sm hover:shadow-xl transition-all duration-500 hover:-translate-y-2 h-full flex flex-col border border-cream-dark/30 cursor-pointer"
                   >
                     <div className="relative h-64 overflow-hidden">
                       <img
-                        src={cake.image}
+                        src={cake.image_url}
                         alt={cake.name}
                         className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110"
                         loading="lazy"
@@ -253,7 +276,7 @@ export default function CakeCollection() {
                             {cake.badge}
                           </span>
                         )}
-                        {cake.originalPrice && (
+                        {cake.original_price && (
                           <span className="bg-rose text-white text-[10px] font-semibold px-3 py-1.5 rounded-full">
                             Sale
                           </span>
@@ -268,11 +291,11 @@ export default function CakeCollection() {
                         {cake.name}
                       </h3>
                       <span className="font-display text-[28px] font-bold text-chocolate block mt-1">₹{cake.price}</span>
-                      {cake.originalPrice && (
-                        <span className="text-xs text-warm-gray line-through">₹{cake.originalPrice}</span>
+                      {cake.original_price && (
+                        <span className="text-xs text-warm-gray line-through">₹{cake.original_price}</span>
                       )}
                       <p className="text-sm text-warm-gray leading-relaxed mb-3 mt-2 flex-1">
-                        {cake.shortDescription}
+                        {cake.short_description}
                       </p>
                     </div>
                   </Link>

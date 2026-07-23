@@ -1,8 +1,8 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { Link } from 'react-router-dom'
 import { motion } from 'framer-motion'
 import { ThumbsUp, Check, Quote } from 'lucide-react'
-import reviews, { getReviewStats } from '../data/reviews'
+import { supabase } from '../lib/supabase'
 import StarRating from '../components/StarRating'
 import FadeInSection from '../components/FadeInSection'
 
@@ -19,14 +19,16 @@ function ReviewCard({ review }) {
       </div>
 
       <div className="flex items-center gap-3 mb-3">
-        <img
-          src={review.avatar}
-          alt={review.name}
-          className="w-11 h-11 rounded-full object-cover ring-2 ring-gold/30 ring-offset-2 ring-offset-[#523632]"
-        />
+        {review.avatar ? (
+          <img src={review.avatar} alt={review.customer_name} className="w-11 h-11 rounded-full object-cover ring-2 ring-gold/30 ring-offset-2 ring-offset-[#523632]" />
+        ) : (
+          <div className="w-11 h-11 rounded-full bg-gradient-to-br from-rose to-gold flex items-center justify-center ring-2 ring-gold/30 ring-offset-2 ring-offset-[#523632]">
+            <span className="text-white text-sm font-bold">{review.customer_name?.[0]?.toUpperCase()}</span>
+          </div>
+        )}
         <div className="flex-1 min-w-0">
           <div className="flex items-center gap-2 flex-wrap">
-            <h3 className="font-display text-base font-bold text-white">{review.name}</h3>
+            <h3 className="font-display text-base font-bold text-white">{review.customer_name}</h3>
             {review.verified && (
               <span className="flex items-center gap-1 text-[9px] font-semibold text-emerald-300 bg-emerald-500/20 px-1.5 py-0.5 rounded-full">
                 <Check className="w-2.5 h-2.5" /> Verified
@@ -35,31 +37,33 @@ function ReviewCard({ review }) {
           </div>
           <div className="flex items-center gap-2 mt-0.5">
             <StarRating rating={review.rating} size={13} />
-            <span className="text-[11px] text-white/50">{review.date}</span>
+            <span className="text-[11px] text-white/50">{new Date(review.created_at).toLocaleDateString()}</span>
           </div>
         </div>
       </div>
 
-      <div className="mb-3">
-        <span className="text-[10px] font-semibold uppercase tracking-wider text-gold px-2.5 py-1 rounded-full" style={{ backgroundColor: 'rgba(201,161,92,0.15)' }}>
-          {review.event} · {review.cakeName}
-        </span>
-      </div>
+      {(review.event || review.cake_name) && (
+        <div className="mb-3">
+          <span className="text-[10px] font-semibold uppercase tracking-wider text-gold px-2.5 py-1 rounded-full" style={{ backgroundColor: 'rgba(201,161,92,0.15)' }}>
+            {review.event}{review.event && review.cake_name ? ' · ' : ''}{review.cake_name}
+          </span>
+        </div>
+      )}
 
       <div className="flex-1 mb-3">
         <p className="text-[13px] text-white/75 leading-relaxed">
-          {review.text}
+          {review.comment}
         </p>
       </div>
 
       <div className="flex items-center justify-between pt-3 mt-auto" style={{ borderTop: '1px solid rgba(255,255,255,0.1)' }}>
         <button className="flex items-center gap-1.5 text-xs text-white/50 hover:text-gold transition-colors duration-300">
           <ThumbsUp className="w-3.5 h-3.5" />
-          <span className="font-medium">Helpful ({review.helpful})</span>
+          <span className="font-medium">Helpful ({review.helpful || 0})</span>
         </button>
-        {review.cakeId && (
+        {review.cake_id && (
           <Link
-            to={`/cake/${review.cakeId}`}
+            to={`/cake/${review.cake_id}`}
             className="text-xs text-gold font-semibold hover:text-gold/70 transition-colors duration-300"
           >
             View Cake →
@@ -71,7 +75,39 @@ function ReviewCard({ review }) {
 }
 
 export default function Reviews() {
-  const stats = getReviewStats()
+  const [reviews, setReviews] = useState([])
+  const [loading, setLoading] = useState(true)
+  const [stats, setStats] = useState({ average: '0.0', total: 0, distribution: [] })
+
+  useEffect(() => {
+    fetchReviews()
+  }, [])
+
+  const fetchReviews = async () => {
+    try {
+      const { data, error } = await supabase
+        .from('reviews')
+        .select('*')
+        .eq('approved', true)
+        .order('created_at', { ascending: false })
+      if (error) throw error
+      const reviewsData = data || []
+      setReviews(reviewsData)
+
+      const total = reviewsData.length
+      const avg = total > 0 ? (reviewsData.reduce((sum, r) => sum + r.rating, 0) / total).toFixed(1) : '0.0'
+      const distribution = [5, 4, 3, 2, 1].map(star => ({
+        star,
+        count: reviewsData.filter(r => r.rating === star).length,
+        percentage: total > 0 ? (reviewsData.filter(r => r.rating === star).length / total) * 100 : 0,
+      }))
+      setStats({ average: avg, total, distribution })
+    } catch (err) {
+      console.error('Fetch reviews error:', err)
+    } finally {
+      setLoading(false)
+    }
+  }
 
   return (
     <div className="min-h-screen bg-cream pt-24 sm:pt-28 pb-12 sm:pb-16">
@@ -96,7 +132,7 @@ export default function Reviews() {
                 <div className="flex items-center gap-4 justify-center sm:justify-start mb-3">
                   <span className="font-display text-6xl font-bold text-chocolate">{stats.average}</span>
                   <div>
-                    <StarRating rating={stats.average} size={22} />
+                    <StarRating rating={parseFloat(stats.average)} size={22} />
                     <p className="text-sm text-warm-gray mt-1.5 font-medium">{stats.total} verified reviews</p>
                   </div>
                 </div>
@@ -122,13 +158,23 @@ export default function Reviews() {
         </FadeInSection>
 
         {/* Reviews Grid */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-7">
-          {reviews.map((review) => (
-            <FadeInSection key={review.id}>
-              <ReviewCard review={review} />
-            </FadeInSection>
-          ))}
-        </div>
+        {loading ? (
+          <div className="flex items-center justify-center py-20">
+            <div className="w-8 h-8 border-2 border-gold/30 border-t-gold rounded-full animate-spin" />
+          </div>
+        ) : reviews.length === 0 ? (
+          <div className="text-center py-20">
+            <p className="text-warm-gray">No reviews yet. Be the first to leave a review!</p>
+          </div>
+        ) : (
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-7">
+            {reviews.map((review) => (
+              <FadeInSection key={review.id}>
+                <ReviewCard review={review} />
+              </FadeInSection>
+            ))}
+          </div>
+        )}
 
         {/* CTA */}
         <FadeInSection className="mt-20">

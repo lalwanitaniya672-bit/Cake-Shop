@@ -13,8 +13,6 @@ const sidebarLinks = [
   { to: '/admin/dashboard', label: 'Dashboard', icon: LayoutDashboard },
   { to: '/admin/orders', label: 'Orders', icon: ShoppingCart },
   { to: '/admin/cakes', label: 'Cakes', icon: Package },
-  { to: '/admin/categories', label: 'Categories', icon: Package },
-  { to: '/admin/flavors', label: 'Flavors', icon: Package },
   { to: '/admin/custom-orders', label: 'Custom Orders', icon: Package },
   { to: '/admin/customers', label: 'Customers', icon: Users },
   { to: '/admin/reviews', label: 'Reviews', icon: Star },
@@ -22,8 +20,7 @@ const sidebarLinks = [
   { to: '/admin/settings', label: 'Settings', icon: Settings },
 ]
 
-const CATEGORIES = ['Birthday', 'Wedding', 'Anniversary', 'Premium', 'Classic', 'Seasonal', 'Custom']
-const ITEMS_PER_PAGE = 12
+const ITEMS_PER_PAGE = 8
 
 function AdminSidebar({ isOpen, onClose }) {
   const location = useLocation()
@@ -61,9 +58,9 @@ function AdminSidebar({ isOpen, onClose }) {
   )
 }
 
-function CakeFormModal({ cake, onClose, onSave }) {
+function CategoryFormModal({ category, onClose, onSave }) {
   const [form, setForm] = useState({
-    name: '', price: '', description: '', category: '', flavours: '', serves: '', image_url: '', badge: '', is_active: true, is_featured: false,
+    name: '', slug: '', description: '', image_url: '', sort_order: 0, is_active: true,
   })
   const [imageFile, setImageFile] = useState(null)
   const [imagePreview, setImagePreview] = useState('')
@@ -71,15 +68,23 @@ function CakeFormModal({ cake, onClose, onSave }) {
   const [uploadProgress, setUploadProgress] = useState(0)
 
   useEffect(() => {
-    if (cake) {
+    if (category) {
       setForm({
-        name: cake.name || '', price: cake.price || '', description: cake.description || '', category: cake.category || '',
-        flavours: Array.isArray(cake.flavours) ? cake.flavours.join(', ') : cake.flavours || '', serves: cake.serves || '',
-        image_url: cake.image_url || '', badge: cake.badge || '', is_active: cake.is_active ?? true, is_featured: cake.is_featured ?? false,
+        name: category.name || '', slug: category.slug || '', description: category.description || '',
+        image_url: category.image_url || '', sort_order: category.sort_order || 0, is_active: category.is_active ?? true,
       })
-      setImagePreview(cake.image_url || '')
+      setImagePreview(category.image_url || '')
     }
-  }, [cake])
+  }, [category])
+
+  const generateSlug = (name) => {
+    return name.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)/g, '')
+  }
+
+  const handleNameChange = (e) => {
+    const name = e.target.value
+    setForm({ ...form, name, slug: category ? form.slug : generateSlug(name) })
+  }
 
   const handleImageChange = (e) => {
     const file = e.target.files?.[0]
@@ -95,7 +100,7 @@ function CakeFormModal({ cake, onClose, onSave }) {
   const uploadImage = async () => {
     if (!imageFile) return form.image_url
     const fileExt = imageFile.name.split('.').pop()
-    const fileName = `cakes/${Date.now()}.${fileExt}`
+    const fileName = `categories/${Date.now()}.${fileExt}`
     const { error } = await supabase.storage.from('cake-images').upload(fileName, imageFile, { cacheControl: '3600', upsert: false })
     if (error) throw error
     const { data: { publicUrl } } = supabase.storage.from('cake-images').getPublicUrl(fileName)
@@ -109,20 +114,19 @@ function CakeFormModal({ cake, onClose, onSave }) {
     try {
       let imageUrl = form.image_url
       if (imageFile) { setUploadProgress(30); imageUrl = await uploadImage(); setUploadProgress(70) }
-      const flavoursArray = form.flavours.split(',').map(f => f.trim()).filter(f => f)
       const slug = form.name.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)/g, '')
-      const cakeData = { name: form.name, slug, price: parseFloat(form.price), description: form.description, category: form.category, flavours: flavoursArray, serves: form.serves, image_url: imageUrl, badge: form.badge, is_active: form.is_active, is_featured: form.is_featured }
+      const categoryData = { name: form.name, slug, description: form.description, image_url: imageUrl, sort_order: parseInt(form.sort_order) || 0, is_active: form.is_active }
       setUploadProgress(90)
-      if (cake) {
-        const { error } = await supabase.from('cakes').update(cakeData).eq('id', cake.id)
+      if (category) {
+        const { error } = await supabase.from('categories').update(categoryData).eq('id', category.id)
         if (error) throw error
       } else {
-        const { error } = await supabase.from('cakes').insert([cakeData])
+        const { error } = await supabase.from('categories').insert([categoryData])
         if (error) throw error
       }
       setUploadProgress(100)
       onSave()
-    } catch (error) { console.error('Save cake error:', error); alert('Failed to save cake: ' + error.message) }
+    } catch (error) { console.error('Save category error:', error); alert('Failed to save category: ' + error.message) }
     finally { setUploading(false); setUploadProgress(0) }
   }
 
@@ -130,12 +134,12 @@ function CakeFormModal({ cake, onClose, onSave }) {
     <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4" onClick={onClose}>
       <motion.div initial={{ scale: 0.95, opacity: 0 }} animate={{ scale: 1, opacity: 1 }} exit={{ scale: 0.95, opacity: 0 }} className="bg-card rounded-3xl max-w-xl w-full max-h-[90vh] overflow-y-auto shadow-2xl" onClick={(e) => e.stopPropagation()}>
         <div className="flex items-center justify-between p-6 border-b border-cream-dark/30">
-          <h2 className="font-display text-xl font-bold text-chocolate">{cake ? 'Edit Cake' : 'Add New Cake'}</h2>
+          <h2 className="font-display text-xl font-bold text-chocolate">{category ? 'Edit Category' : 'Add New Category'}</h2>
           <button onClick={onClose} className="w-8 h-8 rounded-full bg-cream flex items-center justify-center hover:bg-cream-dark transition-colors"><X className="w-4 h-4 text-chocolate" /></button>
         </div>
         <form onSubmit={handleSubmit} className="p-6 space-y-5">
           <div>
-            <label className="text-xs text-warm-gray mb-1 block">Cake Image</label>
+            <label className="text-xs text-warm-gray mb-1 block">Category Image</label>
             <div className="relative border-2 border-dashed border-cream-dark rounded-2xl overflow-hidden">
               {imagePreview ? (
                 <div className="relative"><img src={imagePreview} alt="Preview" className="w-full h-48 object-cover" /><label className="absolute inset-0 bg-black/40 flex items-center justify-center cursor-pointer opacity-0 hover:opacity-100 transition-opacity"><div className="text-center text-white"><Upload className="w-6 h-6 mx-auto mb-1" /><span className="text-xs">Change Image</span></div><input type="file" accept="image/*" onChange={handleImageChange} className="hidden" /></label></div>
@@ -145,31 +149,23 @@ function CakeFormModal({ cake, onClose, onSave }) {
             </div>
           </div>
 
-          <div><label className="text-xs text-warm-gray mb-1 block">Cake Name *</label><input type="text" value={form.name} onChange={(e) => setForm({ ...form, name: e.target.value })} required className="w-full px-4 py-3 rounded-xl border border-cream-dark bg-cream text-sm text-charcoal focus:outline-none focus:ring-2 focus:ring-gold/30" placeholder="e.g. Red Velvet Dream" /></div>
+          <div><label className="text-xs text-warm-gray mb-1 block">Category Name *</label><input type="text" value={form.name} onChange={handleNameChange} required className="w-full px-4 py-3 rounded-xl border border-cream-dark bg-cream text-sm text-charcoal focus:outline-none focus:ring-2 focus:ring-gold/30" placeholder="e.g. Birthday Cakes" /></div>
 
-          <div className="grid grid-cols-2 gap-4">
-            <div><label className="text-xs text-warm-gray mb-1 block">Price (₹) *</label><input type="number" value={form.price} onChange={(e) => setForm({ ...form, price: e.target.value })} required min="0" step="0.01" className="w-full px-4 py-3 rounded-xl border border-cream-dark bg-cream text-sm text-charcoal focus:outline-none focus:ring-2 focus:ring-gold/30" placeholder="1299" /></div>
-            <div><label className="text-xs text-warm-gray mb-1 block">Serves</label><input type="text" value={form.serves} onChange={(e) => setForm({ ...form, serves: e.target.value })} className="w-full px-4 py-3 rounded-xl border border-cream-dark bg-cream text-sm text-charcoal focus:outline-none focus:ring-2 focus:ring-gold/30" placeholder="8-10 people" /></div>
-          </div>
+          <div><label className="text-xs text-warm-gray mb-1 block">Slug</label><input type="text" value={form.slug} readOnly className="w-full px-4 py-3 rounded-xl border border-cream-dark bg-cream text-sm text-charcoal/60 focus:outline-none" placeholder="Auto-generated from name" /></div>
 
-          <div><label className="text-xs text-warm-gray mb-1 block">Category *</label><select value={form.category} onChange={(e) => setForm({ ...form, category: e.target.value })} required className="w-full px-4 py-3 rounded-xl border border-cream-dark bg-cream text-sm text-charcoal focus:outline-none focus:ring-2 focus:ring-gold/30 appearance-none"><option value="">Select Category</option>{CATEGORIES.map(c => <option key={c} value={c}>{c}</option>)}</select></div>
+          <div><label className="text-xs text-warm-gray mb-1 block">Description</label><textarea value={form.description} onChange={(e) => setForm({ ...form, description: e.target.value })} rows={3} className="w-full px-4 py-3 rounded-xl border border-cream-dark bg-cream text-sm text-charcoal focus:outline-none focus:ring-2 focus:ring-gold/30 resize-none" placeholder="Describe this category..." /></div>
 
-          <div><label className="text-xs text-warm-gray mb-1 block">Flavours (comma separated)</label><input type="text" value={form.flavours} onChange={(e) => setForm({ ...form, flavours: e.target.value })} className="w-full px-4 py-3 rounded-xl border border-cream-dark bg-cream text-sm text-charcoal focus:outline-none focus:ring-2 focus:ring-gold/30" placeholder="e.g. Classic, Strawberry, Blueberry" /></div>
+          <div><label className="text-xs text-warm-gray mb-1 block">Sort Order</label><input type="number" value={form.sort_order} onChange={(e) => setForm({ ...form, sort_order: e.target.value })} min="0" className="w-full px-4 py-3 rounded-xl border border-cream-dark bg-cream text-sm text-charcoal focus:outline-none focus:ring-2 focus:ring-gold/30" placeholder="0" /></div>
 
-          <div><label className="text-xs text-warm-gray mb-1 block">Description</label><textarea value={form.description} onChange={(e) => setForm({ ...form, description: e.target.value })} rows={3} className="w-full px-4 py-3 rounded-xl border border-cream-dark bg-cream text-sm text-charcoal focus:outline-none focus:ring-2 focus:ring-gold/30 resize-none" placeholder="Describe this cake..." /></div>
+          <div><label className="text-xs text-warm-gray mb-1 block">Image URL (optional)</label><input type="text" value={form.image_url} onChange={(e) => setForm({ ...form, image_url: e.target.value })} className="w-full px-4 py-3 rounded-xl border border-cream-dark bg-cream text-sm text-charcoal focus:outline-none focus:ring-2 focus:ring-gold/30" placeholder="https://..." /></div>
 
-          <div><label className="text-xs text-warm-gray mb-1 block">Badge (optional)</label><input type="text" value={form.badge} onChange={(e) => setForm({ ...form, badge: e.target.value })} className="w-full px-4 py-3 rounded-xl border border-cream-dark bg-cream text-sm text-charcoal focus:outline-none focus:ring-2 focus:ring-gold/30" placeholder="e.g. Bestseller, New, Premium" /></div>
-
-          <div className="flex gap-4">
-            <label className="flex items-center gap-2 cursor-pointer"><input type="checkbox" checked={form.is_active} onChange={(e) => setForm({ ...form, is_active: e.target.checked })} className="w-4 h-4 rounded border-cream-dark text-chocolate focus:ring-gold/30" /><span className="text-sm text-charcoal">In Stock</span></label>
-            <label className="flex items-center gap-2 cursor-pointer"><input type="checkbox" checked={form.is_featured} onChange={(e) => setForm({ ...form, is_featured: e.target.checked })} className="w-4 h-4 rounded border-cream-dark text-chocolate focus:ring-gold/30" /><span className="text-sm text-charcoal">Featured</span></label>
-          </div>
+          <label className="flex items-center gap-2 cursor-pointer"><input type="checkbox" checked={form.is_active} onChange={(e) => setForm({ ...form, is_active: e.target.checked })} className="w-4 h-4 rounded border-cream-dark text-chocolate focus:ring-gold/30" /><span className="text-sm text-charcoal">Active</span></label>
 
           {uploading && <div className="space-y-2"><div className="flex justify-between text-xs text-warm-gray"><span>Uploading...</span><span>{uploadProgress}%</span></div><div className="h-2 bg-cream rounded-full overflow-hidden"><motion.div className="h-full bg-gradient-to-r from-gold to-gold-light rounded-full" initial={{ width: 0 }} animate={{ width: `${uploadProgress}%` }} /></div></div>}
 
           <div className="flex gap-3 pt-2">
             <button type="button" onClick={onClose} className="flex-1 py-3 rounded-xl border border-cream-dark text-sm font-medium text-chocolate hover:bg-cream-dark transition-colors">Cancel</button>
-            <button type="submit" disabled={uploading} className="flex-1 py-3 rounded-xl bg-chocolate text-white text-sm font-medium hover:bg-chocolate-light transition-colors disabled:opacity-50">{uploading ? 'Saving...' : cake ? 'Update Cake' : 'Add Cake'}</button>
+            <button type="submit" disabled={uploading} className="flex-1 py-3 rounded-xl bg-chocolate text-white text-sm font-medium hover:bg-chocolate-light transition-colors disabled:opacity-50">{uploading ? 'Saving...' : category ? 'Update Category' : 'Add Category'}</button>
           </div>
         </form>
       </motion.div>
@@ -177,93 +173,82 @@ function CakeFormModal({ cake, onClose, onSave }) {
   )
 }
 
-function CakeCard({ cake, onEdit, onDelete }) {
+function CategoryCard({ category, onEdit, onDelete }) {
   return (
     <motion.div layout initial={{ opacity: 0, scale: 0.95 }} animate={{ opacity: 1, scale: 1 }} exit={{ opacity: 0, scale: 0.95 }} className="bg-card rounded-2xl shadow-sm border border-cream-dark/30 overflow-hidden hover:shadow-md transition-shadow">
       <div className="relative aspect-square overflow-hidden bg-cream">
-        {cake.image_url ? <img src={cake.image_url} alt={cake.name} className="w-full h-full object-cover" /> : <div className="w-full h-full flex items-center justify-center"><span className="text-5xl">🎂</span></div>}
+        {category.image_url ? <img src={category.image_url} alt={category.name} className="w-full h-full object-cover" /> : <div className="w-full h-full flex items-center justify-center"><span className="text-5xl">📁</span></div>}
         <div className="absolute top-2 left-2 flex gap-1.5">
-          {!cake.is_active && <span className="px-2 py-0.5 rounded-full bg-red-500 text-white text-[10px] font-semibold">Out of Stock</span>}
-          {cake.badge && <span className="px-2 py-0.5 rounded-full bg-gold text-chocolate text-[10px] font-semibold">{cake.badge}</span>}
+          {!category.is_active && <span className="px-2 py-0.5 rounded-full bg-red-500 text-white text-[10px] font-semibold">Inactive</span>}
         </div>
         <div className="absolute top-2 right-2 flex gap-1.5">
-          <button onClick={() => onEdit(cake)} className="w-8 h-8 rounded-lg bg-white/90 backdrop-blur-sm flex items-center justify-center hover:bg-white transition-colors shadow-sm"><Pencil className="w-3.5 h-3.5 text-chocolate" /></button>
-          <button onClick={() => onDelete(cake)} className="w-8 h-8 rounded-lg bg-white/90 backdrop-blur-sm flex items-center justify-center hover:bg-red-50 transition-colors shadow-sm"><Trash2 className="w-3.5 h-3.5 text-red-500" /></button>
+          <button onClick={() => onEdit(category)} className="w-8 h-8 rounded-lg bg-white/90 backdrop-blur-sm flex items-center justify-center hover:bg-white transition-colors shadow-sm"><Pencil className="w-3.5 h-3.5 text-chocolate" /></button>
+          <button onClick={() => onDelete(category)} className="w-8 h-8 rounded-lg bg-white/90 backdrop-blur-sm flex items-center justify-center hover:bg-red-50 transition-colors shadow-sm"><Trash2 className="w-3.5 h-3.5 text-red-500" /></button>
         </div>
       </div>
       <div className="p-4">
         <div className="flex items-start justify-between gap-2 mb-2">
-          <h3 className="font-display text-sm font-bold text-chocolate leading-tight">{cake.name}</h3>
-          <span className="text-sm font-bold text-chocolate whitespace-nowrap">₹{cake.price}</span>
+          <h3 className="font-display text-sm font-bold text-chocolate leading-tight">{category.name}</h3>
+          <span className={`text-[10px] px-2 py-0.5 rounded-full font-semibold ${category.is_active ? 'bg-green-100 text-green-700' : 'bg-red-100 text-red-600'}`}>{category.is_active ? 'Active' : 'Inactive'}</span>
         </div>
-        <p className="text-xs text-warm-gray mb-2 line-clamp-2">{cake.description}</p>
-        <div className="flex items-center justify-between mb-2">
-          <span className="text-[10px] px-2 py-0.5 rounded-full bg-cream-dark text-charcoal/60 font-medium">{cake.category}</span>
-          {cake.flavours && <span className="text-[10px] text-warm-gray">{cake.flavours.length} flavour(s)</span>}
-        </div>
+        <p className="text-xs text-warm-gray mb-2 line-clamp-2">{category.description || 'No description'}</p>
         <div className="flex items-center justify-between text-[10px] text-warm-gray">
-          <span>{cake.serves || '-'}</span>
-          <span>{new Date(cake.created_at).toLocaleDateString()}</span>
+          <span className="px-2 py-0.5 rounded-full bg-cream-dark text-charcoal/60 font-medium">{category.slug}</span>
+          <span>{new Date(category.created_at).toLocaleDateString()}</span>
         </div>
       </div>
     </motion.div>
   )
 }
 
-export default function AdminCakes() {
+export default function AdminCategories() {
   const [sidebarOpen, setSidebarOpen] = useState(false)
-  const [cakes, setCakes] = useState([])
+  const [categories, setCategories] = useState([])
   const [loading, setLoading] = useState(true)
   const [searchQuery, setSearchQuery] = useState('')
-  const [categoryFilter, setCategoryFilter] = useState('all')
-  const [stockFilter, setStockFilter] = useState('all')
   const [currentPage, setCurrentPage] = useState(1)
-  const [showCakeForm, setShowCakeForm] = useState(false)
-  const [editingCake, setEditingCake] = useState(null)
+  const [showCategoryForm, setShowCategoryForm] = useState(false)
+  const [editingCategory, setEditingCategory] = useState(null)
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(null)
 
-  useEffect(() => { fetchCakes() }, [])
+  useEffect(() => { fetchCategories() }, [])
 
-  const fetchCakes = async () => {
+  const fetchCategories = async () => {
     try {
-      const { data, error } = await supabase.from('cakes').select('*').order('created_at', { ascending: false })
+      const { data, error } = await supabase.from('categories').select('*').order('sort_order', { ascending: true }).order('created_at', { ascending: false })
       if (error) throw error
-      setCakes(data || [])
-    } catch (error) { console.error('Fetch cakes error:', error) } finally { setLoading(false) }
+      setCategories(data || [])
+    } catch (error) { console.error('Fetch categories error:', error) } finally { setLoading(false) }
   }
 
-  const filteredCakes = useMemo(() => {
-    return cakes.filter((cake) => {
-      const search = `${cake.name} ${cake.description} ${cake.category}`.toLowerCase()
-      const matchesSearch = search.includes(searchQuery.toLowerCase())
-      const matchesCategory = categoryFilter === 'all' || cake.category === categoryFilter
-      const matchesStock = stockFilter === 'all' || (stockFilter === 'in_stock' && cake.is_active) || (stockFilter === 'out_of_stock' && !cake.is_active)
-      return matchesSearch && matchesCategory && matchesStock
+  const filteredCategories = useMemo(() => {
+    return categories.filter((category) => {
+      const search = `${category.name} ${category.description} ${category.slug}`.toLowerCase()
+      return search.includes(searchQuery.toLowerCase())
     })
-  }, [cakes, searchQuery, categoryFilter, stockFilter])
+  }, [categories, searchQuery])
 
-  const totalPages = Math.ceil(filteredCakes.length / ITEMS_PER_PAGE)
-  const paginatedCakes = filteredCakes.slice((currentPage - 1) * ITEMS_PER_PAGE, currentPage * ITEMS_PER_PAGE)
+  const totalPages = Math.ceil(filteredCategories.length / ITEMS_PER_PAGE)
+  const paginatedCategories = filteredCategories.slice((currentPage - 1) * ITEMS_PER_PAGE, currentPage * ITEMS_PER_PAGE)
 
-  useEffect(() => { setCurrentPage(1) }, [searchQuery, categoryFilter, stockFilter])
+  useEffect(() => { setCurrentPage(1) }, [searchQuery])
 
-  const handleEdit = (cake) => { setEditingCake(cake); setShowCakeForm(true) }
+  const handleEdit = (category) => { setEditingCategory(category); setShowCategoryForm(true) }
 
-  const handleDelete = async (cakeId) => {
+  const handleDelete = async (categoryId) => {
     try {
-      const { error } = await supabase.from('cakes').delete().eq('id', cakeId)
+      const { error } = await supabase.from('categories').delete().eq('id', categoryId)
       if (error) throw error
-      setCakes(cakes.filter(c => c.id !== cakeId))
+      setCategories(categories.filter(c => c.id !== categoryId))
       setShowDeleteConfirm(null)
-    } catch (error) { console.error('Delete cake error:', error); alert('Failed to delete cake: ' + error.message) }
+    } catch (error) { console.error('Delete category error:', error); alert('Failed to delete category: ' + error.message) }
   }
 
-  const handleSave = () => { setShowCakeForm(false); setEditingCake(null); fetchCakes() }
+  const handleSave = () => { setShowCategoryForm(false); setEditingCategory(null); fetchCategories() }
 
-  const categories = [...new Set(cakes.map(c => c.category).filter(Boolean))]
   const stats = useMemo(() => ({
-    total: cakes.length, inStock: cakes.filter(c => c.is_active).length, outOfStock: cakes.filter(c => !c.is_active).length, featured: cakes.filter(c => c.is_featured).length,
-  }), [cakes])
+    total: categories.length, active: categories.filter(c => c.is_active).length, inactive: categories.filter(c => !c.is_active).length,
+  }), [categories])
 
   return (
     <div className="min-h-screen bg-cream">
@@ -272,17 +257,16 @@ export default function AdminCakes() {
         <header className="sticky top-0 z-30 bg-cream/95 backdrop-blur-sm border-b border-cream-dark/30">
           <div className="flex items-center justify-between px-4 sm:px-6 py-4">
             <button onClick={() => setSidebarOpen(true)} className="lg:hidden w-10 h-10 flex items-center justify-center rounded-xl bg-card border border-cream-dark/30"><Menu className="w-5 h-5 text-chocolate" /></button>
-            <h1 className="font-display text-xl font-bold text-chocolate">Cakes</h1>
-            <button onClick={() => { setEditingCake(null); setShowCakeForm(true) }} className="flex items-center gap-2 px-4 py-2.5 rounded-xl bg-chocolate text-white text-sm font-medium hover:bg-chocolate-light transition-colors"><Plus className="w-4 h-4" /><span className="hidden sm:inline">Add Cake</span></button>
+            <h1 className="font-display text-xl font-bold text-chocolate">Categories</h1>
+            <button onClick={() => { setEditingCategory(null); setShowCategoryForm(true) }} className="flex items-center gap-2 px-4 py-2.5 rounded-xl bg-chocolate text-white text-sm font-medium hover:bg-chocolate-light transition-colors"><Plus className="w-4 h-4" /><span className="hidden sm:inline">Add Category</span></button>
           </div>
         </header>
 
         <main className="p-4 sm:p-6 lg:p-8">
-          <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 mb-6">
+          <div className="grid grid-cols-3 gap-3 mb-6">
             {[{ label: 'Total', value: stats.total, color: 'text-chocolate' },
-              { label: 'In Stock', value: stats.inStock, color: 'text-green-600' },
-              { label: 'Out of Stock', value: stats.outOfStock, color: 'text-red-600' },
-              { label: 'Featured', value: stats.featured, color: 'text-gold' }
+              { label: 'Active', value: stats.active, color: 'text-green-600' },
+              { label: 'Inactive', value: stats.inactive, color: 'text-red-600' }
             ].map(s => (
               <div key={s.label} className="bg-card rounded-xl p-3 border border-cream-dark/30 text-center">
                 <p className="text-[10px] text-warm-gray">{s.label}</p>
@@ -292,24 +276,22 @@ export default function AdminCakes() {
           </div>
 
           <div className="flex flex-col sm:flex-row gap-3 mb-6">
-            <div className="relative flex-1"><Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-warm-gray" /><input type="text" placeholder="Search cakes..." value={searchQuery} onChange={(e) => setSearchQuery(e.target.value)} className="w-full pl-10 pr-4 py-3 rounded-xl border border-cream-dark bg-card text-sm text-charcoal focus:outline-none focus:ring-2 focus:ring-gold/30" /></div>
-            <div className="relative"><Filter className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-warm-gray" /><select value={categoryFilter} onChange={(e) => setCategoryFilter(e.target.value)} className="pl-10 pr-8 py-3 rounded-xl border border-cream-dark bg-card text-sm text-charcoal focus:outline-none focus:ring-2 focus:ring-gold/30 appearance-none cursor-pointer"><option value="all">All Categories</option>{categories.map(c => <option key={c} value={c}>{c}</option>)}</select></div>
-            <select value={stockFilter} onChange={(e) => setStockFilter(e.target.value)} className="px-4 py-3 rounded-xl border border-cream-dark bg-card text-sm text-charcoal focus:outline-none focus:ring-2 focus:ring-gold/30 appearance-none cursor-pointer"><option value="all">All Stock</option><option value="in_stock">In Stock</option><option value="out_of_stock">Out of Stock</option></select>
+            <div className="relative flex-1"><Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-warm-gray" /><input type="text" placeholder="Search categories..." value={searchQuery} onChange={(e) => setSearchQuery(e.target.value)} className="w-full pl-10 pr-4 py-3 rounded-xl border border-cream-dark bg-card text-sm text-charcoal focus:outline-none focus:ring-2 focus:ring-gold/30" /></div>
           </div>
 
           <div className="bg-card rounded-2xl shadow-sm border border-cream-dark/30 overflow-hidden">
             {loading ? (
-              <div className="p-12 text-center"><div className="w-8 h-8 border-2 border-gold/30 border-t-gold rounded-full animate-spin mx-auto" /><p className="text-warm-gray text-sm mt-3">Loading cakes...</p></div>
-            ) : paginatedCakes.length === 0 ? (
-              <div className="p-12 text-center"><Package className="w-12 h-12 text-warm-gray/40 mx-auto mb-3" /><p className="text-warm-gray text-sm">No cakes found</p></div>
+              <div className="p-12 text-center"><div className="w-8 h-8 border-2 border-gold/30 border-t-gold rounded-full animate-spin mx-auto" /><p className="text-warm-gray text-sm mt-3">Loading categories...</p></div>
+            ) : paginatedCategories.length === 0 ? (
+              <div className="p-12 text-center"><Package className="w-12 h-12 text-warm-gray/40 mx-auto mb-3" /><p className="text-warm-gray text-sm">No categories found</p></div>
             ) : (
               <>
                 <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-4 p-6">
-                  <AnimatePresence>{paginatedCakes.map((cake) => <CakeCard key={cake.id} cake={cake} onEdit={handleEdit} onDelete={(c) => setShowDeleteConfirm(c)} />)}</AnimatePresence>
+                  <AnimatePresence>{paginatedCategories.map((category) => <CategoryCard key={category.id} category={category} onEdit={handleEdit} onDelete={(c) => setShowDeleteConfirm(c)} />)}</AnimatePresence>
                 </div>
                 {totalPages > 1 && (
                   <div className="flex items-center justify-between px-6 py-4 border-t border-cream-dark/30">
-                    <p className="text-xs text-warm-gray">Showing {((currentPage - 1) * ITEMS_PER_PAGE) + 1} to {Math.min(currentPage * ITEMS_PER_PAGE, filteredCakes.length)} of {filteredCakes.length} cakes</p>
+                    <p className="text-xs text-warm-gray">Showing {((currentPage - 1) * ITEMS_PER_PAGE) + 1} to {Math.min(currentPage * ITEMS_PER_PAGE, filteredCategories.length)} of {filteredCategories.length} categories</p>
                     <div className="flex items-center gap-1">
                       <button onClick={() => setCurrentPage(p => Math.max(1, p - 1))} disabled={currentPage === 1} className="px-3 py-1.5 rounded-lg text-xs font-medium border border-cream-dark text-chocolate hover:bg-cream-dark disabled:opacity-40 transition-colors">Prev</button>
                       {Array.from({ length: totalPages }, (_, i) => i + 1).map(page => (
@@ -325,7 +307,7 @@ export default function AdminCakes() {
         </main>
       </div>
 
-      <AnimatePresence>{showCakeForm && <CakeFormModal cake={editingCake} onClose={() => { setShowCakeForm(false); setEditingCake(null) }} onSave={handleSave} />}</AnimatePresence>
+      <AnimatePresence>{showCategoryForm && <CategoryFormModal category={editingCategory} onClose={() => { setShowCategoryForm(false); setEditingCategory(null) }} onSave={handleSave} />}</AnimatePresence>
 
       <AnimatePresence>
         {showDeleteConfirm && (
