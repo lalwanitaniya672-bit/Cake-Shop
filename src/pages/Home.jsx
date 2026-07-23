@@ -1,235 +1,231 @@
+import { useState, useEffect, useCallback } from 'react'
 import { Link } from 'react-router-dom'
-import { motion } from 'framer-motion'
-import { ArrowRight, Star, Truck, Clock, Shield, ChevronRight } from 'lucide-react'
+import { motion, AnimatePresence } from 'framer-motion'
+import { ArrowRight, Star } from 'lucide-react'
 import { getFeaturedCakes } from '../data/cakes'
-import reviews from '../data/reviews'
 import FadeInSection from '../components/FadeInSection'
 import StarRating from '../components/StarRating'
 
-const stats = [
-  { number: '2,500+', label: 'Cakes Crafted' },
-  { number: '7', label: 'Years of Joy' },
-  { number: '100%', label: 'Premium Ingredients' },
-  { number: '4.9★', label: 'Customer Rating' },
-]
-
-const processSteps = [
-  { step: '01', title: 'Consultation', desc: 'Share your vision, theme, and flavor preferences with our cake designers.', icon: '💬' },
-  { step: '02', title: 'Design', desc: 'We create detailed sketches and flavor profiles tailored to your occasion.', icon: '✏️' },
-  { step: '03', title: 'Craft', desc: 'Our artisans handcraft your cake using premium, locally-sourced ingredients.', icon: '👨‍🍳' },
-  { step: '04', title: 'Deliver', desc: 'Careful delivery and setup to ensure your cake arrives picture-perfect.', icon: '🚚' },
+const heroSlides = [
+  { image: 'https://images.unsplash.com/photo-1578985545062-69928b1d9587?w=1600&h=1200&fit=crop&q=80', name: 'Dark Chocolate Truffle', subtitle: 'Our signature bestseller' },
+  { image: 'https://images.unsplash.com/photo-1565958011703-44f9829ba187?w=1600&h=1200&fit=crop&q=80', name: 'Strawberry Bliss', subtitle: 'Fresh berry delight' },
+  { image: 'https://images.unsplash.com/photo-1621303837174-89787a7d4729?w=1600&h=1200&fit=crop&q=80', name: 'Vanilla Dream', subtitle: 'Classic elegance' },
+  { image: 'https://images.unsplash.com/photo-1588195538326-c5b1e9f80a1b?w=1600&h=1200&fit=crop&q=80', name: 'Red Velvet Royale', subtitle: 'A timeless favorite' },
 ]
 
 export default function Home() {
   const featuredCakes = getFeaturedCakes()
-  const topReviews = reviews.slice(0, 3)
+  const [currentSlide, setCurrentSlide] = useState(0)
+
+  const nextSlide = useCallback(() => {
+    setCurrentSlide((prev) => (prev + 1) % heroSlides.length)
+  }, [])
+
+  const prevSlide = useCallback(() => {
+    setCurrentSlide((prev) => (prev - 1 + heroSlides.length) % heroSlides.length)
+  }, [])
+
+  useEffect(() => {
+    const timer = setInterval(nextSlide, 4000)
+    return () => clearInterval(timer)
+  }, [nextSlide])
 
   return (
     <>
-      {/* Hero */}
-      <section className="relative min-h-screen flex items-center overflow-hidden">
-        <div className="absolute inset-0 bg-gradient-to-br from-cream via-blush/30 to-cream-dark" />
-        <div className="absolute top-20 right-10 w-72 h-72 bg-rose/10 rounded-full blur-3xl" />
-        <div className="absolute bottom-20 left-10 w-96 h-96 bg-gold/10 rounded-full blur-3xl" />
+      {/* Hero - Fullscreen */}
+      <section className="relative h-screen w-full overflow-hidden">
+        {/* Background Image Slider */}
+        <div className="absolute inset-0">
+          <AnimatePresence mode="wait">
+            <motion.img
+              key={currentSlide}
+              src={heroSlides[currentSlide].image}
+              alt={heroSlides[currentSlide].name}
+              className="absolute inset-0 w-full h-full object-cover"
+              initial={{ opacity: 0, scale: 1.1 }}
+              animate={{ opacity: 1, scale: 1 }}
+              exit={{ opacity: 0, scale: 0.95 }}
+              transition={{ duration: 0.8 }}
+            />
+          </AnimatePresence>
+        </div>
+        {/* Dark Overlay */}
+        <div className="absolute inset-0 bg-gradient-to-r from-black/70 via-black/50 to-black/30 backdrop-blur-[1px]" />
 
-        <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-32 grid lg:grid-cols-2 gap-16 items-center">
+        {/* Content - offset by navbar height (h-16 lg:h-20) */}
+        <div className="relative z-10 flex flex-col items-center justify-center text-center px-6 sm:px-12 lg:px-16 h-full pt-16 lg:pt-20">
+          {/* Badge */}
           <motion.div
-            initial={{ opacity: 0, y: 30 }}
+            initial={{ opacity: 0, y: -20 }}
             animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.8 }}
+            transition={{ duration: 0.6 }}
+            className="inline-flex items-center gap-2 bg-white/10 backdrop-blur-sm rounded-full px-4 py-2 mb-6 border border-white/20"
           >
-            <div className="inline-flex items-center gap-2 bg-gold/10 rounded-full px-4 py-2 mb-8">
-              <span className="w-2 h-2 rounded-full bg-gold animate-pulse" />
-              <span className="text-xs font-medium text-gold uppercase tracking-wider">
-                Handcrafted with Love
-              </span>
+            <span className="w-2 h-2 rounded-full bg-gold animate-pulse" />
+            <span className="text-xs font-medium text-white/90 uppercase tracking-wider">
+              Artisan Cake Boutique
+            </span>
+          </motion.div>
+
+          {/* Title */}
+          <motion.h1
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.6, delay: 0.2 }}
+            className="font-display text-4xl sm:text-5xl lg:text-6xl xl:text-7xl font-bold text-white mb-4 leading-tight max-w-3xl"
+          >
+            Where Every Cake
+            <span className="block text-transparent bg-clip-text bg-gradient-to-r from-gold via-rose to-gold">
+              Tells a Story
+            </span>
+          </motion.h1>
+
+          {/* Welcome Message */}
+          <motion.p
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.6, delay: 0.3 }}
+            className="text-white/80 leading-relaxed text-base sm:text-lg max-w-xl mb-8"
+          >
+            Welcome to The Velvet Crumb - where passion meets precision. We craft bespoke
+            cakes that transform your sweetest celebrations into unforgettable memories.
+          </motion.p>
+
+          {/* CTA Buttons */}
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.6, delay: 0.4 }}
+            className="flex flex-col sm:flex-row gap-4 mb-10"
+          >
+            <Link
+              to="/collection"
+              className="group inline-flex items-center justify-center gap-2 bg-gradient-to-r from-gold to-gold-light text-chocolate px-8 py-4 rounded-full text-sm font-semibold hover:shadow-xl hover:shadow-gold/30 transition-all duration-300 hover:-translate-y-0.5"
+            >
+              Explore Collection
+              <ArrowRight className="w-4 h-4 transition-transform duration-300 group-hover:translate-x-1" />
+            </Link>
+            <Link
+              to="/custom-orders"
+              className="inline-flex items-center justify-center gap-2 bg-white/10 backdrop-blur-sm border border-white/20 text-white px-8 py-4 rounded-full text-sm font-medium hover:bg-white/20 transition-all duration-300"
+            >
+              Order Now
+            </Link>
+          </motion.div>
+
+          {/* Customer Trust */}
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.6, delay: 0.5 }}
+            className="flex flex-col sm:flex-row items-center gap-4 sm:gap-6"
+          >
+            <div className="flex -space-x-3">
+              {['https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=40&h=40&fit=crop&q=80',
+                'https://images.unsplash.com/photo-1438761681033-6461ffad8d80?w=40&h=40&fit=crop&q=80',
+                'https://images.unsplash.com/photo-1544005313-94ddf0286df2?w=40&h=40&fit=crop&q=80',
+                'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=40&h=40&fit=crop&q=80',
+              ].map((src, i) => (
+                <img key={i} src={src} alt="" className="w-9 h-9 rounded-full border-2 border-white/30 object-cover" />
+              ))}
             </div>
-
-            <h1 className="font-display text-5xl sm:text-6xl lg:text-7xl font-bold text-chocolate leading-[1.1] mb-6">
-              Cakes That
-              <span className="block text-transparent bg-clip-text bg-gradient-to-r from-rose-dark to-gold">
-                Tell Stories
-              </span>
-            </h1>
-
-            <p className="text-lg text-charcoal/60 max-w-lg mb-10 leading-relaxed">
-              Every layer holds a promise of perfection. From intimate celebrations to grand weddings,
-              we craft edible masterpieces that make your sweetest moments unforgettable.
-            </p>
-
-            <div className="flex flex-wrap gap-4">
-              <Link
-                to="/collection"
-                className="group inline-flex items-center gap-2 bg-chocolate text-white px-8 py-4 rounded-full text-sm font-medium hover:bg-chocolate-light transition-all duration-300 hover:shadow-xl hover:shadow-chocolate/20 hover:-translate-y-0.5"
-              >
-                Explore Our Cakes
-                <ArrowRight className="w-4 h-4 transition-transform duration-300 group-hover:translate-x-1" />
-              </Link>
-              <Link
-                to="/custom-orders"
-                className="inline-flex items-center gap-2 border-2 border-chocolate/20 text-chocolate px-8 py-4 rounded-full text-sm font-medium hover:border-chocolate/40 hover:bg-chocolate/5 transition-all duration-300"
-              >
-                Design Your Own
-              </Link>
-            </div>
-
-            <div className="flex items-center gap-6 mt-10 pt-8 border-t border-chocolate/10">
-              <div className="flex -space-x-2">
-                {['https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=40&h=40&fit=crop&q=80',
-                  'https://images.unsplash.com/photo-1438761681033-6461ffad8d80?w=40&h=40&fit=crop&q=80',
-                  'https://images.unsplash.com/photo-1544005313-94ddf0286df2?w=40&h=40&fit=crop&q=80',
-                ].map((src, i) => (
-                  <img key={i} src={src} alt="" className="w-9 h-9 rounded-full border-2 border-cream object-cover" />
+            <div className="flex flex-col items-center sm:flex-row sm:items-center gap-1 sm:gap-2">
+              <div className="flex gap-0.5">
+                {[...Array(5)].map((_, i) => (
+                  <Star key={i} className="w-3.5 h-3.5 fill-gold text-gold" />
                 ))}
               </div>
-              <div>
-                <div className="flex gap-0.5">
-                  {[...Array(5)].map((_, i) => (
-                    <Star key={i} className="w-3.5 h-3.5 fill-gold text-gold" />
-                  ))}
-                </div>
-                <p className="text-xs text-warm-gray mt-0.5">Loved by 2,500+ happy clients</p>
-              </div>
+              <p className="text-xs text-white/70 text-center sm:text-left">Trusted by 2,500+ happy clients</p>
             </div>
           </motion.div>
-
-          <motion.div
-            initial={{ opacity: 0, scale: 0.9 }}
-            animate={{ opacity: 1, scale: 1 }}
-            transition={{ duration: 0.8, delay: 0.2 }}
-            className="relative flex justify-center"
-          >
-            <div className="relative w-80 h-80 sm:w-[420px] sm:h-[420px]">
-              <div className="absolute inset-0 bg-gradient-to-br from-rose/20 to-gold/20 rounded-3xl rotate-6" />
-              <div className="absolute inset-0 rounded-3xl overflow-hidden shadow-2xl">
-                <img
-                  src="https://images.unsplash.com/photo-1578985545062-69928b1d9587?w=600&h=600&fit=crop&q=80"
-                  alt="Beautiful chocolate cake"
-                  className="w-full h-full object-cover"
-                />
-                <div className="absolute inset-0 bg-gradient-to-t from-chocolate/40 to-transparent" />
-                <div className="absolute bottom-6 left-6 right-6 text-white">
-                  <p className="font-display text-2xl font-bold">Dark Chocolate Truffle</p>
-                  <p className="text-sm text-white/80 mt-1">Our signature bestseller</p>
-                </div>
-              </div>
-              <motion.div
-                animate={{ y: [0, -10, 0] }}
-                transition={{ duration: 3, repeat: Infinity }}
-                className="absolute -top-6 -right-6 bg-white rounded-2xl p-4 shadow-xl"
-              >
-                <div className="flex items-center gap-2">
-                  <div className="w-8 h-8 rounded-full bg-gold/10 flex items-center justify-center">
-                    <Star className="w-4 h-4 text-gold fill-gold" />
-                  </div>
-                  <div>
-                    <p className="text-xs font-semibold text-chocolate">4.9 Rating</p>
-                    <p className="text-[10px] text-warm-gray">2,500+ reviews</p>
-                  </div>
-                </div>
-              </motion.div>
-              <motion.div
-                animate={{ y: [0, 10, 0] }}
-                transition={{ duration: 3, repeat: Infinity, delay: 1.5 }}
-                className="absolute -bottom-4 -left-4 bg-white rounded-2xl p-4 shadow-xl"
-              >
-                <div className="flex items-center gap-2">
-                  <div className="w-8 h-8 rounded-full bg-green-50 flex items-center justify-center">
-                    <Truck className="w-4 h-4 text-green-600" />
-                  </div>
-                  <div>
-                    <p className="text-xs font-semibold text-chocolate">Free Delivery</p>
-                    <p className="text-[10px] text-warm-gray">Orders $150+</p>
-                  </div>
-                </div>
-              </motion.div>
-            </div>
-          </motion.div>
-        </div>
-
-        <div className="absolute bottom-8 left-1/2 -translate-x-1/2 animate-bounce">
-          <ChevronRight className="w-6 h-6 text-chocolate/30 rotate-90" />
-        </div>
-      </section>
-
-      {/* Stats */}
-      <section className="py-16 bg-white/50">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="grid grid-cols-2 lg:grid-cols-4 gap-8">
-            {stats.map((stat, i) => (
-              <FadeInSection key={stat.label} delay={i * 100} className="text-center">
-                <div className="font-display text-3xl sm:text-4xl font-bold text-chocolate mb-2">
-                  {stat.number}
-                </div>
-                <div className="text-sm text-warm-gray font-medium">{stat.label}</div>
-              </FadeInSection>
-            ))}
-          </div>
         </div>
       </section>
 
       {/* Featured Cakes */}
-      <section className="py-24">
+      <section className="pt-12 pb-4 md:pt-20 md:pb-6 bg-white/50">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <FadeInSection className="text-center mb-16">
-            <span className="text-xs font-medium text-gold uppercase tracking-[0.2em] mb-4 block">
+          <FadeInSection className="text-center mb-8 md:mb-14">
+            <span className="text-xs font-medium text-gold uppercase tracking-[0.2em] mb-3 block">
               Signature Collection
             </span>
-            <h2 className="font-display text-4xl sm:text-5xl font-bold text-chocolate mb-4">
+            <h2 className="font-display text-3xl sm:text-4xl lg:text-5xl font-bold text-chocolate mb-4">
               Our Finest Creations
             </h2>
-            <p className="text-warm-gray max-w-2xl mx-auto">
-              Each cake in our signature collection is a labor of love, meticulously crafted
-              to delight both the eyes and the palate.
+            <p className="text-warm-gray max-w-2xl mx-auto text-sm sm:text-base">
+              Each cake is a labor of love, meticulously crafted to delight both the eyes and the palate.
             </p>
           </FadeInSection>
 
-          <div className="grid md:grid-cols-3 gap-8">
-            {featuredCakes.map((cake, i) => (
-              <FadeInSection key={cake.id} delay={i * 150}>
-                <Link
-                  to={`/cake/${cake.id}`}
-                  className="group bg-white rounded-3xl overflow-hidden shadow-sm hover:shadow-xl transition-all duration-500 hover:-translate-y-2 block"
-                >
-                  <div className="relative h-64 overflow-hidden">
-                    <img
-                      src={cake.image}
-                      alt={cake.name}
-                      className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110"
-                      loading="lazy"
-                    />
-                    <div className="absolute inset-0 bg-gradient-to-t from-chocolate/50 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
-                    {cake.badge && (
-                      <span className="absolute top-4 left-4 bg-gold text-white text-[10px] font-semibold uppercase tracking-wider px-3 py-1.5 rounded-full">
-                        {cake.badge}
-                      </span>
-                    )}
+          {/* Mobile Grid */}
+          <div className="grid grid-cols-2 gap-3 md:hidden">
+            {featuredCakes.map((cake) => (
+              <Link
+                key={cake.id}
+                to={`/cake/${cake.id}`}
+                className="group bg-card rounded-2xl overflow-hidden shadow-sm hover:shadow-lg transition-all duration-500 hover:-translate-y-1 block border border-cream-dark/30"
+              >
+                <div className="relative h-36 overflow-hidden">
+                  <img
+                    src={cake.image}
+                    alt={cake.name}
+                    className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110"
+                    loading="lazy"
+                  />
+                  {cake.badge && (
+                    <span className="absolute top-1.5 left-1.5 bg-gold text-white text-[8px] font-semibold uppercase tracking-wider px-2 py-0.5 rounded-full">
+                      {cake.badge}
+                    </span>
+                  )}
+                </div>
+                <div className="p-2.5 text-center">
+                  <h3 className="font-display text-[15px] font-bold text-chocolate group-hover:text-gold transition-colors duration-300 leading-tight line-clamp-1">
+                    {cake.name}
+                  </h3>
+                  <div className="flex justify-center mt-1.5">
+                    <span className="font-display text-[17px] font-bold text-chocolate">₹{cake.price}</span>
                   </div>
-                  <div className="p-6">
-                    <div className="flex items-center gap-2 mb-2">
-                      <span className="text-[10px] uppercase tracking-wider text-gold font-medium">{cake.category}</span>
-                    </div>
-                    <div className="flex items-start justify-between mb-2">
-                      <h3 className="font-display text-xl font-semibold text-chocolate group-hover:text-gold transition-colors duration-300">
-                        {cake.name}
-                      </h3>
-                      <span className="font-display text-lg font-semibold text-gold">${cake.price}</span>
-                    </div>
-                    <p className="text-sm text-warm-gray leading-relaxed mb-3">{cake.shortDescription}</p>
-                    <div className="flex items-center gap-2">
-                      <StarRating rating={cake.rating} size={12} />
-                      <span className="text-xs text-warm-gray">({cake.reviewCount})</span>
-                    </div>
-                  </div>
-                </Link>
-              </FadeInSection>
+                </div>
+              </Link>
             ))}
           </div>
 
-          <FadeInSection className="text-center mt-12">
+          {/* Desktop Grid */}
+          <div className="hidden md:grid md:grid-cols-2 lg:grid-cols-3 gap-6">
+            {featuredCakes.map((cake) => (
+              <Link
+                key={cake.id}
+                to={`/cake/${cake.id}`}
+                className="group bg-card rounded-3xl overflow-hidden shadow-sm hover:shadow-xl transition-all duration-500 hover:-translate-y-2 block border border-cream-dark/30"
+              >
+                <div className="relative h-64 overflow-hidden">
+                  <img
+                    src={cake.image}
+                    alt={cake.name}
+                    className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110"
+                    loading="lazy"
+                  />
+                  {cake.badge && (
+                    <span className="absolute top-4 left-4 bg-gold text-white text-[10px] font-semibold uppercase tracking-wider px-3 py-1.5 rounded-full">
+                      {cake.badge}
+                    </span>
+                  )}
+                </div>
+                <div className="p-6 text-center">
+                  <span className="text-xs uppercase tracking-wider text-gold font-semibold">{cake.category}</span>
+                  <h3 className="font-display text-[28px] font-bold text-chocolate group-hover:text-gold transition-colors duration-300 leading-tight mt-1.5">
+                    {cake.name}
+                  </h3>
+                  <span className="font-display text-[28px] font-bold text-chocolate block mt-1">₹{cake.price}</span>
+                  <p className="text-[15px] text-charcoal/60 leading-relaxed mt-2">{cake.shortDescription}</p>
+                </div>
+              </Link>
+            ))}
+          </div>
+
+          <FadeInSection className="text-center mt-8">
             <Link
               to="/collection"
-              className="inline-flex items-center gap-2 text-chocolate font-medium hover:text-gold transition-colors duration-300 group"
+              className="inline-flex items-center gap-2 bg-chocolate text-white px-6 py-3 rounded-full text-sm font-medium hover:bg-chocolate-light transition-all duration-300 hover:shadow-lg hover:-translate-y-0.5 group"
             >
               View Full Collection
               <ArrowRight className="w-4 h-4 transition-transform duration-300 group-hover:translate-x-1" />
@@ -238,114 +234,39 @@ export default function Home() {
         </div>
       </section>
 
-      {/* Process */}
-      <section className="py-24 bg-chocolate text-white relative overflow-hidden">
-        <div className="absolute top-0 left-0 w-full h-full">
-          <div className="absolute top-10 right-20 w-64 h-64 bg-gold/5 rounded-full blur-3xl" />
-          <div className="absolute bottom-10 left-20 w-80 h-80 bg-rose/5 rounded-full blur-3xl" />
-        </div>
-
-        <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <FadeInSection className="text-center mb-16">
-            <span className="text-xs font-medium text-gold uppercase tracking-[0.2em] mb-4 block">
-              How We Work
-            </span>
-            <h2 className="font-display text-4xl sm:text-5xl font-bold text-white mb-4">
-              From Dream to Table
-            </h2>
-            <p className="text-white/60 max-w-2xl mx-auto">
-              Every creation begins with a conversation and ends with a celebration.
-            </p>
-          </FadeInSection>
-
-          <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-8">
-            {processSteps.map((item, i) => (
-              <FadeInSection key={item.step} delay={i * 150}>
-                <div className="text-center group">
-                  <div className="w-16 h-16 rounded-2xl bg-white/5 border border-white/10 flex items-center justify-center mx-auto mb-6 text-2xl group-hover:bg-gold/20 group-hover:border-gold/30 transition-all duration-300">
-                    {item.icon}
-                  </div>
-                  <div className="text-gold/50 font-display text-sm font-semibold mb-2">Step {item.step}</div>
-                  <h3 className="font-display text-xl font-semibold text-white mb-3">{item.title}</h3>
-                  <p className="text-sm text-white/50 leading-relaxed">{item.desc}</p>
-                </div>
-              </FadeInSection>
-            ))}
-          </div>
-        </div>
-      </section>
-
-      {/* Testimonials */}
-      <section className="py-24">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <FadeInSection className="text-center mb-16">
-            <span className="text-xs font-medium text-gold uppercase tracking-[0.2em] mb-4 block">
-              Sweet Words
-            </span>
-            <h2 className="font-display text-4xl sm:text-5xl font-bold text-chocolate mb-4">
-              What Our Clients Say
-            </h2>
-          </FadeInSection>
-
-          <div className="grid md:grid-cols-3 gap-8">
-            {topReviews.map((t, i) => (
-              <FadeInSection key={t.id} delay={i * 150}>
-                <div className="bg-white rounded-3xl p-8 shadow-sm hover:shadow-lg transition-all duration-500 h-full flex flex-col">
-                  <StarRating rating={t.rating} className="mb-4" />
-                  <p className="text-charcoal/70 leading-relaxed flex-1 mb-6 italic">
-                    &ldquo;{t.text}&rdquo;
-                  </p>
-                  <div className="pt-6 border-t border-cream-dark flex items-center gap-3">
-                    <img src={t.avatar} alt={t.name} className="w-10 h-10 rounded-full object-cover" />
-                    <div>
-                      <p className="font-display font-semibold text-chocolate text-sm">{t.name}</p>
-                      <p className="text-xs text-warm-gray">{t.event} · {t.date}</p>
-                    </div>
-                  </div>
-                </div>
-              </FadeInSection>
-            ))}
-          </div>
-
-          <FadeInSection className="text-center mt-8">
-            <Link
-              to="/reviews"
-              className="inline-flex items-center gap-2 text-chocolate font-medium hover:text-gold transition-colors group"
-            >
-              Read All Reviews
-              <ArrowRight className="w-4 h-4 transition-transform group-hover:translate-x-1" />
-            </Link>
-          </FadeInSection>
-        </div>
-      </section>
-
       {/* CTA */}
-      <section className="py-24">
+      <section className="pt-2 pb-12 md:pt-4 md:pb-20">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <FadeInSection>
-            <div className="relative bg-gradient-to-br from-chocolate to-chocolate-light rounded-[2rem] p-12 sm:p-16 overflow-hidden text-center">
-              <div className="absolute top-0 right-0 w-64 h-64 bg-gold/10 rounded-full blur-3xl" />
-              <div className="absolute bottom-0 left-0 w-80 h-80 bg-rose/10 rounded-full blur-3xl" />
+            <div className="relative rounded-3xl overflow-hidden">
+              <div className="absolute inset-0">
+                <img
+                  src="https://images.unsplash.com/photo-1517433367423-c7e5b0f35086?w=1600&h=600&fit=crop&q=80"
+                  alt="Bakery background"
+                  className="w-full h-full object-cover"
+                />
+              </div>
+              <div className="absolute inset-0 bg-gradient-to-r from-chocolate/90 via-chocolate/80 to-chocolate/70 backdrop-blur-[2px]" />
 
-              <div className="relative">
-                <h2 className="font-display text-4xl sm:text-5xl font-bold text-white mb-6">
+              <div className="relative p-8 sm:p-12 lg:p-16 text-center">
+                <h2 className="font-display text-3xl sm:text-4xl lg:text-5xl font-bold text-white mb-4 sm:mb-6">
                   Ready to Create<br />Something Sweet?
                 </h2>
-                <p className="text-white/60 max-w-xl mx-auto mb-10 text-lg">
+                <p className="text-white/70 max-w-xl mx-auto mb-8 sm:mb-10 text-base sm:text-lg">
                   Whether it's a towering wedding cake or a charming birthday treat,
                   we'd love to bring your vision to life.
                 </p>
-                <div className="flex flex-wrap justify-center gap-4">
+                <div className="flex flex-col sm:flex-row flex-wrap justify-center gap-4">
                   <Link
                     to="/custom-orders"
-                    className="inline-flex items-center gap-2 bg-gold text-chocolate px-8 py-4 rounded-full text-sm font-semibold hover:bg-gold-light transition-all duration-300 hover:shadow-xl hover:-translate-y-0.5"
+                    className="inline-flex items-center justify-center gap-2 bg-gold text-chocolate px-8 py-4 rounded-full text-sm font-semibold hover:bg-gold-light transition-all duration-300 hover:shadow-xl hover:-translate-y-0.5"
                   >
                     Start Your Order
                     <ArrowRight className="w-4 h-4" />
                   </Link>
                   <Link
                     to="/contact"
-                    className="inline-flex items-center gap-2 border-2 border-white/20 text-white px-8 py-4 rounded-full text-sm font-medium hover:border-white/40 hover:bg-white/5 transition-all duration-300"
+                    className="inline-flex items-center justify-center gap-2 border-2 border-white/20 text-white px-8 py-4 rounded-full text-sm font-medium hover:border-white/40 hover:bg-white/10 transition-all duration-300"
                   >
                     Get in Touch
                   </Link>

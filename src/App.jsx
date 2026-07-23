@@ -4,10 +4,14 @@ import ScrollToTop from './components/ScrollToTop'
 import Navbar from './components/Navbar'
 import Footer from './components/Footer'
 import WhatsAppButton from './components/WhatsAppButton'
+import ProtectedAdminRoute from './components/ProtectedAdminRoute'
+import { AdminAuthProvider } from './contexts/AdminAuthContext'
 import useAuthStore from './stores/authStore'
+import { isAdminEmail } from './lib/adminSetup'
 
 import Home from './pages/Home'
 import About from './pages/About'
+import Trust from './pages/Trust'
 import CakeCollection from './pages/CakeCollection'
 import ProductDetail from './pages/ProductDetail'
 import CustomOrders from './pages/CustomOrders'
@@ -18,6 +22,18 @@ import Signup from './pages/Signup'
 import Cart from './pages/Cart'
 import Checkout from './pages/Checkout'
 import Reviews from './pages/Reviews'
+import PaymentPage from './pages/PaymentPage'
+import OrderConfirmation from './pages/OrderConfirmation'
+import AdminDashboard from './pages/AdminDashboard'
+import AdminOrders from './pages/AdminOrders'
+import AdminCakes from './pages/AdminCakes'
+import AdminReviews from './pages/AdminReviews'
+import AdminMessages from './pages/AdminMessages'
+import AdminCustomOrders from './pages/AdminCustomOrders'
+import AdminCustomers from './pages/AdminCustomers'
+import AdminSettings from './pages/AdminSettings'
+import AdminReports from './pages/AdminReports'
+import SetupAdmin from './pages/SetupAdmin'
 
 function AuthLoadingScreen() {
   return (
@@ -40,9 +56,12 @@ function ProtectedRoutes() {
         <Routes>
           <Route path="/" element={<Home />} />
           <Route path="/about" element={<About />} />
+          <Route path="/trust" element={<Trust />} />
           <Route path="/collection" element={<CakeCollection />} />
           <Route path="/cake/:id" element={<ProductDetail />} />
           <Route path="/custom-orders" element={<CustomOrders />} />
+          <Route path="/payment" element={<PaymentPage />} />
+          <Route path="/order-confirmation" element={<OrderConfirmation />} />
           <Route path="/gallery" element={<Gallery />} />
           <Route path="/contact" element={<Contact />} />
           <Route path="/cart" element={<Cart />} />
@@ -51,8 +70,8 @@ function ProtectedRoutes() {
           <Route path="*" element={
             <div className="min-h-screen flex items-center justify-center">
               <div className="text-center">
-                <div className="text-6xl mb-4">🎂</div>
-                <h1 className="font-display text-4xl font-bold text-chocolate mb-2">404</h1>
+                <div className="text-5xl sm:text-6xl mb-4">🎂</div>
+                <h1 className="font-display text-3xl sm:text-4xl font-bold text-chocolate mb-2">404</h1>
                 <p className="text-warm-gray mb-6">This page doesn't exist yet.</p>
                 <a href="/" className="inline-flex items-center gap-2 bg-chocolate text-white px-6 py-3 rounded-full text-sm font-medium hover:bg-chocolate-light transition-all">
                   Go Home
@@ -82,14 +101,60 @@ export default function App() {
     return <AuthLoadingScreen />
   }
 
+  const userIsAdmin = user && isAdminEmail(user.email)
+
   return (
     <div className="min-h-screen bg-cream">
       <ScrollToTop />
-      <Routes>
-        <Route path="/login" element={user ? <Navigate to="/" replace /> : <Login />} />
-        <Route path="/signup" element={user ? <Navigate to="/" replace /> : <Signup />} />
-        <Route path="/*" element={user ? <ProtectedRoutes /> : <Navigate to="/login" state={{ from: location.pathname }} replace />} />
-      </Routes>
+      <AdminAuthProvider>
+        <Routes>
+          {/* Login/Signup/Setup - always available */}
+          <Route path="/login" element={<Login />} />
+          <Route path="/signup" element={user ? <Navigate to="/" replace /> : <Signup />} />
+          <Route path="/setup-admin" element={<SetupAdmin />} />
+
+          {/* Admin Routes */}
+          <Route path="/admin/dashboard" element={
+            <ProtectedAdminRoute><AdminDashboard /></ProtectedAdminRoute>
+          } />
+          <Route path="/admin/orders" element={
+            <ProtectedAdminRoute><AdminOrders /></ProtectedAdminRoute>
+          } />
+          <Route path="/admin/cakes" element={
+            <ProtectedAdminRoute><AdminCakes /></ProtectedAdminRoute>
+          } />
+          <Route path="/admin/reviews" element={
+            <ProtectedAdminRoute><AdminReviews /></ProtectedAdminRoute>
+          } />
+          <Route path="/admin/messages" element={
+            <ProtectedAdminRoute><AdminMessages /></ProtectedAdminRoute>
+          } />
+          <Route path="/admin/custom-orders" element={
+            <ProtectedAdminRoute><AdminCustomOrders /></ProtectedAdminRoute>
+          } />
+          <Route path="/admin/customers" element={
+            <ProtectedAdminRoute><AdminCustomers /></ProtectedAdminRoute>
+          } />
+          <Route path="/admin/settings" element={
+            <ProtectedAdminRoute><AdminSettings /></ProtectedAdminRoute>
+          } />
+          <Route path="/admin/reports" element={
+            <ProtectedAdminRoute><AdminReports /></ProtectedAdminRoute>
+          } />
+          <Route path="/admin" element={
+            <Navigate to="/admin/dashboard" replace />
+          } />
+
+          {/* Catch-all: admin users go to admin dashboard, customers see customer site, guests go to login */}
+          <Route path="/*" element={
+            userIsAdmin
+              ? <Navigate to="/admin/dashboard" replace />
+              : user
+                ? <ProtectedRoutes />
+                : <Navigate to="/login" state={{ from: location.pathname }} replace />
+          } />
+        </Routes>
+      </AdminAuthProvider>
     </div>
   )
 }

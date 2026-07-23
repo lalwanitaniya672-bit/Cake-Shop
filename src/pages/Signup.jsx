@@ -77,7 +77,7 @@ export default function Signup() {
       </div>
 
       {/* Right - Form */}
-      <div className="flex-1 flex items-center justify-center p-8 sm:p-12">
+      <div className="flex-1 flex items-center justify-center p-6 sm:p-8 lg:p-12">
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}

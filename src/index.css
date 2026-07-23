@@ -11,12 +11,19 @@
 
   html {
     scroll-behavior: smooth;
+    overflow-x: hidden;
   }
 
   body {
     font-family: 'DM Sans', sans-serif;
-    color: #2C2C2C;
-    background-color: #FFF8F0;
+    color: #3D3D3D;
+    background-color: #F7F1EA;
+    overflow-x: hidden;
+  }
+
+  img {
+    max-width: 100%;
+    height: auto;
   }
 }
 

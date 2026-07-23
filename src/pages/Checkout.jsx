@@ -128,7 +128,7 @@ export default function Checkout() {
           <div className="grid lg:grid-cols-3 gap-8">
             <div className="lg:col-span-2">
               {step === 1 && (
-                <motion.div initial={{ opacity: 0, x: -20 }} animate={{ opacity: 1, x: 0 }} className="bg-white rounded-2xl p-6 sm:p-8 shadow-sm">
+                <motion.div initial={{ opacity: 0, x: -20 }} animate={{ opacity: 1, x: 0 }} className="bg-card rounded-2xl p-6 sm:p-8 shadow-sm border border-cream-dark/30">
                   <h2 className="font-display text-xl font-bold text-chocolate mb-6">Shipping Information</h2>
                   <div className="grid sm:grid-cols-2 gap-4">
                     <div>
@@ -188,7 +188,7 @@ export default function Checkout() {
               )}
 
               {step === 2 && (
-                <motion.div initial={{ opacity: 0, x: -20 }} animate={{ opacity: 1, x: 0 }} className="bg-white rounded-2xl p-6 sm:p-8 shadow-sm">
+                <motion.div initial={{ opacity: 0, x: -20 }} animate={{ opacity: 1, x: 0 }} className="bg-card rounded-2xl p-6 sm:p-8 shadow-sm border border-cream-dark/30">
                   <div className="flex items-center justify-between mb-6">
                     <h2 className="font-display text-xl font-bold text-chocolate">Payment Details</h2>
                     <div className="flex items-center gap-1 text-xs text-warm-gray">
@@ -234,7 +234,7 @@ export default function Checkout() {
               )}
 
               {step === 3 && (
-                <motion.div initial={{ opacity: 0, x: -20 }} animate={{ opacity: 1, x: 0 }} className="bg-white rounded-2xl p-6 sm:p-8 shadow-sm">
+                <motion.div initial={{ opacity: 0, x: -20 }} animate={{ opacity: 1, x: 0 }} className="bg-card rounded-2xl p-6 sm:p-8 shadow-sm border border-cream-dark/30">
                   <h2 className="font-display text-xl font-bold text-chocolate mb-6">Review Your Order</h2>
                   <div className="space-y-4 mb-6">
                     <div className="flex items-start gap-3 p-4 rounded-xl bg-cream/50">
@@ -263,15 +263,17 @@ export default function Checkout() {
                       </div>
                     </div>
                   </div>
-                  <div className="flex gap-3">
+                  <div className="flex flex-col sm:flex-row gap-3">
                     <button type="button" onClick={() => setStep(2)}
-                      className="px-6 py-3.5 rounded-full border border-cream-dark text-sm font-medium text-chocolate hover:bg-cream-dark/30 transition-all">
+                      className="px-6 py-3.5 rounded-full border border-cream-dark text-sm font-medium text-chocolate hover:bg-cream-dark/30 transition-all order-2 sm:order-1">
                       Back
                     </button>
                     <button type="submit"
-                      className="flex-1 bg-green-600 text-white py-3.5 rounded-full text-sm font-semibold hover:bg-green-700 transition-all duration-300 flex items-center justify-center gap-2">
+                      className="flex-1 bg-green-600 text-white py-3.5 rounded-full text-sm font-semibold hover:bg-green-700 transition-all duration-300 flex items-center justify-center gap-2 order-1 sm:order-2">
                       <Lock className="w-4 h-4" />
-                      Place Order — ${total.toFixed(2)}
+                      <span className="hidden sm:inline">Place Order - </span>
+                      <span className="sm:hidden">Place Order</span>
+                      <span className="hidden sm:inline">₹{total.toFixed(2)}</span>
                     </button>
                   </div>
                 </motion.div>
@@ -280,7 +282,7 @@ export default function Checkout() {
 
             {/* Order Summary Sidebar */}
             <div className="lg:col-span-1">
-              <div className="bg-white rounded-2xl p-6 shadow-sm sticky top-24">
+              <div className="bg-card rounded-2xl p-6 shadow-sm sticky top-24 border border-cream-dark/30">
                 <h3 className="font-display font-bold text-chocolate mb-4">Your Order</h3>
                 <div className="space-y-3 mb-4 max-h-64 overflow-y-auto">
                   {items.map((item) => (
@@ -290,22 +292,22 @@ export default function Checkout() {
                         <p className="text-sm font-medium text-chocolate truncate">{item.name}</p>
                         <p className="text-xs text-warm-gray">Qty: {item.quantity}</p>
                       </div>
-                      <p className="text-sm font-medium text-chocolate">${item.price * item.quantity}</p>
+                      <p className="text-sm font-medium text-chocolate">₹{item.price * item.quantity}</p>
                     </div>
                   ))}
                 </div>
                 <div className="border-t border-cream-dark pt-4 space-y-2">
                   <div className="flex justify-between text-sm">
                     <span className="text-warm-gray">Subtotal</span>
-                    <span>${subtotal.toFixed(2)}</span>
+                    <span>₹{subtotal.toFixed(2)}</span>
                   </div>
                   <div className="flex justify-between text-sm">
                     <span className="text-warm-gray">Delivery</span>
-                    <span>{shipping === 0 ? 'Free' : `$${shipping.toFixed(2)}`}</span>
+                    <span>{shipping === 0 ? 'Free' : `₹${shipping.toFixed(2)}`}</span>
                   </div>
                   <div className="flex justify-between font-semibold text-chocolate pt-2 border-t border-cream-dark">
                     <span>Total</span>
-                    <span className="font-display">${total.toFixed(2)}</span>
+                    <span className="font-display">₹{total.toFixed(2)}</span>
                   </div>
                 </div>
               </div>

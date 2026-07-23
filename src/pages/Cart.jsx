@@ -1,13 +1,57 @@
+import { useState } from 'react'
 import { Link } from 'react-router-dom'
 import { motion, AnimatePresence } from 'framer-motion'
-import { Minus, Plus, Trash2, ShoppingBag, ArrowRight, ArrowLeft, Tag } from 'lucide-react'
+import { Minus, Plus, Trash2, ShoppingBag, ArrowRight, ArrowLeft, Tag, User, Phone } from 'lucide-react'
 import useCartStore from '../stores/cartStore'
 
 export default function Cart() {
   const { items, updateQuantity, removeItem, getTotalPrice, clearCart } = useCartStore()
+  const [customerName, setCustomerName] = useState('')
+  const [customerPhone, setCustomerPhone] = useState('')
+  const [showForm, setShowForm] = useState(false)
   const subtotal = getTotalPrice()
   const shipping = subtotal > 150 ? 0 : 15
   const total = subtotal + shipping
+
+  const handleOrderConfirm = () => {
+    if (!customerName.trim() || !customerPhone.trim()) {
+      setShowForm(true)
+      return
+    }
+
+    const productLines = items.map(item => {
+      const customizations = Object.keys(item.customizations).length > 0
+        ? Object.entries(item.customizations).map(([k, v]) => `${k}: ${v}`).join(', ')
+        : 'Standard'
+      return `${item.name} | ${customizations} | Qty: ${item.quantity} | ₹${item.price * item.quantity}`
+    }).join('\n')
+
+    const message = `Hello Superlicious Cakes,
+
+I would like to place a custom cake order.
+
+👤 Customer: ${customerName} | ${customerPhone}
+
+🎂 Order Details:
+${productLines}
+
+📅 Date: As soon as possible | Qty: ${items.reduce((sum, item) => sum + item.quantity, 0)} items
+
+📝 Note: No Special Instructions
+
+💰 Price: ₹${total.toFixed(2)}
+
+💳 Payment: COD
+
+Please confirm my order. Thank You!`
+
+    const whatsappUrl = `https://wa.me/918767438990?text=${encodeURIComponent(message)}`
+    window.open(whatsappUrl, '_blank')
+    clearCart()
+    setCustomerName('')
+    setCustomerPhone('')
+    setShowForm(false)
+  }
 
   if (items.length === 0) {
     return (
@@ -63,7 +107,7 @@ export default function Cart() {
                   initial={{ opacity: 0, y: 20 }}
                   animate={{ opacity: 1, y: 0 }}
                   exit={{ opacity: 0, x: -100 }}
-                  className="bg-white rounded-2xl p-4 sm:p-6 shadow-sm flex gap-4 sm:gap-6"
+                  className="bg-card rounded-2xl p-4 sm:p-6 shadow-sm flex gap-4 sm:gap-6 border border-cream-dark/30"
                 >
                   <Link to={`/cake/${item.id}`} className="flex-shrink-0">
                     <div className="w-24 h-24 sm:w-28 sm:h-28 rounded-xl overflow-hidden">
@@ -100,19 +144,19 @@ export default function Cart() {
                       <div className="flex items-center border border-cream-dark rounded-full">
                         <button
                           onClick={() => updateQuantity(item.id, item.quantity - 1, item.customizations)}
-                          className="w-9 h-9 flex items-center justify-center text-chocolate hover:bg-cream-dark/50 rounded-l-full transition-colors"
+                          className="w-10 h-10 flex items-center justify-center text-chocolate hover:bg-cream-dark/50 rounded-l-full transition-colors"
                         >
                           <Minus className="w-3 h-3" />
                         </button>
                         <span className="w-10 text-center text-sm font-semibold text-chocolate">{item.quantity}</span>
                         <button
                           onClick={() => updateQuantity(item.id, item.quantity + 1, item.customizations)}
-                          className="w-9 h-9 flex items-center justify-center text-chocolate hover:bg-cream-dark/50 rounded-r-full transition-colors"
+                          className="w-10 h-10 flex items-center justify-center text-chocolate hover:bg-cream-dark/50 rounded-r-full transition-colors"
                         >
                           <Plus className="w-3 h-3" />
                         </button>
                       </div>
-                      <p className="font-display font-semibold text-chocolate">${item.price * item.quantity}</p>
+                      <p className="font-display font-semibold text-chocolate">₹{item.price * item.quantity}</p>
                     </div>
                   </div>
                 </motion.div>
@@ -122,13 +166,13 @@ export default function Cart() {
 
           {/* Order Summary */}
           <div className="lg:col-span-1">
-            <div className="bg-white rounded-2xl p-6 shadow-sm sticky top-24">
+            <div className="bg-card rounded-2xl p-6 shadow-sm sticky top-24 border border-cream-dark/30">
               <h2 className="font-display text-lg font-bold text-chocolate mb-6">Order Summary</h2>
 
               <div className="space-y-3 mb-6">
                 <div className="flex justify-between text-sm">
                   <span className="text-warm-gray">Subtotal</span>
-                  <span className="text-chocolate font-medium">${subtotal.toFixed(2)}</span>
+                  <span className="text-chocolate font-medium">₹{subtotal.toFixed(2)}</span>
                 </div>
                 <div className="flex justify-between text-sm">
                   <span className="text-warm-gray">Delivery</span>
@@ -136,19 +180,19 @@ export default function Cart() {
                     {shipping === 0 ? (
                       <span className="text-green-600">Free</span>
                     ) : (
-                      `$${shipping.toFixed(2)}`
+                      `₹${shipping.toFixed(2)}`
                     )}
                   </span>
                 </div>
                 {shipping > 0 && (
-                  <p className="text-xs text-warm-gray">Free delivery on orders over $150</p>
+                  <p className="text-xs text-warm-gray">Free delivery on orders over ₹150</p>
                 )}
               </div>
 
               <div className="border-t border-cream-dark pt-4 mb-6">
                 <div className="flex justify-between">
                   <span className="font-semibold text-chocolate">Total</span>
-                  <span className="font-display text-xl font-bold text-chocolate">${total.toFixed(2)}</span>
+                  <span className="font-display text-xl font-bold text-chocolate">₹{total.toFixed(2)}</span>
                 </div>
               </div>
 
@@ -167,12 +211,48 @@ export default function Cart() {
                 </button>
               </div>
 
-              <Link
-                to="/checkout"
-                className="block w-full text-center bg-chocolate text-white py-3.5 rounded-full text-sm font-semibold hover:bg-chocolate-light transition-all duration-300 hover:shadow-xl"
-              >
-                Proceed to Checkout
-              </Link>
+              {/* Customer Details Form */}
+              {showForm && (
+                <div className="mb-6 space-y-3">
+                  <div className="relative">
+                    <User className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-warm-gray" />
+                    <input
+                      type="text"
+                      placeholder="Your Name *"
+                      value={customerName}
+                      onChange={(e) => setCustomerName(e.target.value)}
+                      className="w-full pl-9 pr-3 py-2.5 rounded-xl border border-cream-dark bg-cream/50 text-sm text-charcoal focus:outline-none focus:ring-2 focus:ring-gold/30"
+                    />
+                  </div>
+                  <div className="relative">
+                    <Phone className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-warm-gray" />
+                    <input
+                      type="tel"
+                      placeholder="Phone Number *"
+                      value={customerPhone}
+                      onChange={(e) => setCustomerPhone(e.target.value)}
+                      className="w-full pl-9 pr-3 py-2.5 rounded-xl border border-cream-dark bg-cream/50 text-sm text-charcoal focus:outline-none focus:ring-2 focus:ring-gold/30"
+                    />
+                  </div>
+                </div>
+              )}
+
+              {!showForm ? (
+                <button
+                  onClick={() => setShowForm(true)}
+                  className="block w-full text-center bg-chocolate text-white py-3.5 rounded-full text-sm font-semibold hover:bg-chocolate-light transition-all duration-300 hover:shadow-xl"
+                >
+                  Order Confirm
+                </button>
+              ) : (
+                <button
+                  onClick={handleOrderConfirm}
+                  disabled={!customerName.trim() || !customerPhone.trim()}
+                  className="block w-full text-center bg-chocolate text-white py-3.5 rounded-full text-sm font-semibold hover:bg-chocolate-light transition-all duration-300 hover:shadow-xl disabled:opacity-50 disabled:cursor-not-allowed"
+                >
+                  Order Confirm via WhatsApp
+                </button>
+              )}
 
               <Link
                 to="/collection"
