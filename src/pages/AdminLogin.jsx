@@ -2,41 +2,36 @@ import { useState, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { motion } from 'framer-motion'
 import { Lock, Eye, EyeOff, ArrowRight } from 'lucide-react'
-import { useAdminAuth } from '../contexts/AdminAuthContext'
 
-const ADMIN_EMAIL = 'admin@gmail.com'
+const ADMIN_PASSWORD = '123456789'
 
 export default function AdminLogin() {
   const [password, setPassword] = useState('')
   const [showPassword, setShowPassword] = useState(false)
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState('')
-  const { signIn, admin } = useAdminAuth()
   const navigate = useNavigate()
 
   useEffect(() => {
-    if (admin) {
+    if (localStorage.getItem('admin_auth') === 'true') {
       navigate('/admin/dashboard', { replace: true })
     }
-  }, [admin, navigate])
+  }, [navigate])
 
-  const handleSubmit = async (e) => {
+  const handleSubmit = (e) => {
     e.preventDefault()
     setLoading(true)
     setError('')
 
-    try {
-      await signIn(ADMIN_EMAIL, password)
-      navigate('/admin/dashboard', { replace: true })
-    } catch (err) {
-      const msg = err?.message || 'Login failed'
-      if (msg.includes('Invalid login credentials')) {
-        setError('No admin account found. Please create one in Supabase Dashboard → Authentication → Users with email: admin@gmail.com')
+    setTimeout(() => {
+      if (password === ADMIN_PASSWORD) {
+        localStorage.setItem('admin_auth', 'true')
+        navigate('/admin/dashboard', { replace: true })
       } else {
-        setError(msg)
+        setError('Invalid password')
+        setLoading(false)
       }
-      setLoading(false)
-    }
+    }, 500)
   }
 
   return (

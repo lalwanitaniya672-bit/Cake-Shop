@@ -1,11 +1,8 @@
 import { Navigate } from 'react-router-dom'
 import { useAdminAuth } from '../contexts/AdminAuthContext'
-import useAuthStore from '../stores/authStore'
-import { isAdminEmail } from '../lib/adminSetup'
 
 export default function ProtectedAdminRoute({ children }) {
   const { admin, loading: adminLoading } = useAdminAuth()
-  const user = useAuthStore((s) => s.user)
 
   if (adminLoading) {
     return (
@@ -24,9 +21,5 @@ export default function ProtectedAdminRoute({ children }) {
     return children
   }
 
-  if (user && isAdminEmail(user.email)) {
-    return children
-  }
-
-  return <Navigate to="/login" replace />
+  return <Navigate to="/admin/login" replace />
 }
