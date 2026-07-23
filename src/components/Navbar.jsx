@@ -1,9 +1,8 @@
 import { useState, useEffect } from 'react'
 import { Link, useLocation } from 'react-router-dom'
 import { motion, AnimatePresence } from 'framer-motion'
-import { ShoppingBag, User, LogOut, Menu, X, ChevronDown } from 'lucide-react'
+import { ShoppingBag, Menu, X, ChevronDown } from 'lucide-react'
 import useCartStore from '../stores/cartStore'
-import useAuthStore from '../stores/authStore'
 
 const navLinks = [
   { to: '/', label: 'Home' },
@@ -19,10 +18,8 @@ const navLinks = [
 export default function Navbar() {
   const [isOpen, setIsOpen] = useState(false)
   const [scrolled, setScrolled] = useState(false)
-  const [showUserMenu, setShowUserMenu] = useState(false)
   const location = useLocation()
   const totalItems = useCartStore((s) => s.getTotalItems())
-  const { user, signOut } = useAuthStore()
 
   useEffect(() => {
     const handleScroll = () => setScrolled(window.scrollY > 20)
@@ -32,7 +29,6 @@ export default function Navbar() {
 
   useEffect(() => {
     setIsOpen(false)
-    setShowUserMenu(false)
   }, [location])
 
   return (
@@ -104,56 +100,6 @@ export default function Navbar() {
               )}
             </Link>
 
-            {/* User Menu - Desktop */}
-            <div className="hidden lg:block relative">
-              {user ? (
-                <>
-                  <button
-                    onClick={() => setShowUserMenu(!showUserMenu)}
-                    className="flex items-center gap-2 px-3 py-2 rounded-full bg-cream-dark hover:bg-chocolate/10 border border-cream-dark/30 transition-all duration-300 hover:shadow-md"
-                  >
-                    <div className="w-7 h-7 rounded-full bg-gradient-to-br from-chocolate to-gold flex items-center justify-center">
-                      <span className="text-white text-xs font-bold">
-                        {(user.user_metadata?.full_name || user.email)?.[0]?.toUpperCase()}
-                      </span>
-                    </div>
-                    <ChevronDown className={`w-3.5 h-3.5 text-charcoal/50 transition-transform duration-300 ${showUserMenu ? 'rotate-180' : ''}`} />
-                  </button>
-                  <AnimatePresence>
-                    {showUserMenu && (
-                      <motion.div
-                        initial={{ opacity: 0, y: 8, scale: 0.95 }}
-                        animate={{ opacity: 1, y: 0, scale: 1 }}
-                        exit={{ opacity: 0, y: 8, scale: 0.95 }}
-                        transition={{ duration: 0.2 }}
-                        className="absolute right-0 top-full mt-2 w-60 bg-white rounded-2xl shadow-2xl border border-cream-dark/30 overflow-hidden"
-                      >
-                        <div className="p-4 border-b border-cream-dark/30 bg-gradient-to-r from-cream/50 to-white">
-                          <p className="text-[10px] text-warm-gray uppercase tracking-wider">Signed in as</p>
-                          <p className="text-sm font-medium text-chocolate truncate mt-0.5">{user.email}</p>
-                        </div>
-                        <button
-                          onClick={() => { signOut(); setShowUserMenu(false) }}
-                          className="w-full flex items-center gap-3 px-4 py-3.5 text-sm text-chocolate hover:bg-cream/50 transition-colors"
-                        >
-                          <LogOut className="w-4 h-4 text-warm-gray" />
-                          Sign Out
-                        </button>
-                      </motion.div>
-                    )}
-                  </AnimatePresence>
-                </>
-              ) : (
-                <Link
-                  to="/login"
-                  className="flex items-center gap-2 px-5 py-2.5 rounded-full bg-gradient-to-r from-chocolate to-chocolate-light text-white text-sm font-medium hover:shadow-lg hover:shadow-chocolate/20 transition-all duration-300 hover:-translate-y-0.5"
-                >
-                  <User className="w-4 h-4" />
-                  Sign In
-                </Link>
-              )}
-            </div>
-
             {/* Mobile Toggle */}
             <button
               onClick={() => setIsOpen(!isOpen)}
@@ -197,31 +143,6 @@ export default function Navbar() {
                   {link.label}
                 </Link>
               ))}
-              <div className="pt-3 mt-3 border-t border-cream-dark/30">
-                {user ? (
-                  <div className="space-y-2">
-                    <div className="px-4 py-3 bg-cream-dark rounded-xl">
-                      <p className="text-[10px] text-warm-gray uppercase tracking-wider">Signed in as</p>
-                      <p className="text-sm font-medium text-chocolate truncate mt-0.5">{user.email}</p>
-                    </div>
-                    <button
-                      onClick={() => { signOut(); setIsOpen(false) }}
-                      className="w-full flex items-center gap-3 px-4 py-3.5 text-sm text-chocolate hover:bg-cream-dark rounded-xl transition-colors"
-                    >
-                      <LogOut className="w-4 h-4 text-warm-gray" />
-                      Sign Out
-                    </button>
-                  </div>
-                ) : (
-                  <Link
-                    to="/login"
-                    className="flex items-center justify-center gap-2 px-4 py-3.5 rounded-xl bg-gradient-to-r from-chocolate to-chocolate-light text-white text-sm font-medium hover:shadow-lg transition-all duration-300"
-                  >
-                    <User className="w-4 h-4" />
-                    Sign In
-                  </Link>
-                )}
-              </div>
             </div>
           </motion.div>
         )}
