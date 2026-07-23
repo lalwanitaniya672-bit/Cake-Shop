@@ -14,6 +14,8 @@ import ProductDetail from './pages/ProductDetail'
 import CustomOrders from './pages/CustomOrders'
 import Gallery from './pages/Gallery'
 import Contact from './pages/Contact'
+import Login from './pages/Login'
+import Signup from './pages/Signup'
 import Cart from './pages/Cart'
 import Checkout from './pages/Checkout'
 import Reviews from './pages/Reviews'
@@ -71,18 +73,22 @@ export default function App() {
       <ScrollToTop />
       <AdminAuthProvider>
         <Routes>
-          {/* Admin login — password only, always available */}
+          {/* Customer auth */}
+          <Route path="/login" element={<Login />} />
+          <Route path="/signup" element={<Signup />} />
+
+          {/* Admin login */}
           <Route path="/admin/login" element={<AdminLogin />} />
           <Route path="/setup-admin" element={<SetupAdmin />} />
 
-          {/* Admin panel — protected */}
+          {/* Admin panel */}
           <Route path="/admin/cakes" element={<ProtectedAdminRoute><AdminCakes /></ProtectedAdminRoute>} />
           <Route path="/admin/categories" element={<ProtectedAdminRoute><AdminCategories /></ProtectedAdminRoute>} />
           <Route path="/admin/flavors" element={<ProtectedAdminRoute><AdminFlavors /></ProtectedAdminRoute>} />
           <Route path="/admin/customers" element={<ProtectedAdminRoute><AdminCustomers /></ProtectedAdminRoute>} />
           <Route path="/admin" element={<Navigate to="/admin/cakes" replace />} />
 
-          {/* All public routes — no auth required */}
+          {/* Public routes */}
           <Route path="/*" element={<PublicRoutes />} />
         </Routes>
       </AdminAuthProvider>
