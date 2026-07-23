@@ -4,7 +4,9 @@ import { useAdminAuth } from '../contexts/AdminAuthContext'
 export default function ProtectedAdminRoute({ children }) {
   const { admin, loading: adminLoading } = useAdminAuth()
 
-  if (adminLoading) {
+  const isAuthenticated = admin || localStorage.getItem('admin_auth') === 'true'
+
+  if (adminLoading && !isAuthenticated) {
     return (
       <div className="min-h-screen bg-cream flex items-center justify-center">
         <div className="text-center">
@@ -17,7 +19,7 @@ export default function ProtectedAdminRoute({ children }) {
     )
   }
 
-  if (admin) {
+  if (isAuthenticated) {
     return children
   }
 

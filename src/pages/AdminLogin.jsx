@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { motion } from 'framer-motion'
 import { Lock, Eye, EyeOff, ArrowRight } from 'lucide-react'
+import { useAdminAuth } from '../contexts/AdminAuthContext'
 
 const ADMIN_PASSWORD = '123456789'
 
@@ -11,12 +12,13 @@ export default function AdminLogin() {
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState('')
   const navigate = useNavigate()
+  const { admin } = useAdminAuth()
 
   useEffect(() => {
-    if (localStorage.getItem('admin_auth') === 'true') {
+    if (admin || localStorage.getItem('admin_auth') === 'true') {
       navigate('/admin/dashboard', { replace: true })
     }
-  }, [navigate])
+  }, [admin, navigate])
 
   const handleSubmit = (e) => {
     e.preventDefault()
