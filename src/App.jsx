@@ -24,14 +24,8 @@ import Reviews from './pages/Reviews'
 import PaymentPage from './pages/PaymentPage'
 import OrderConfirmation from './pages/OrderConfirmation'
 import AdminLogin from './pages/AdminLogin'
-import AdminDashboard from './pages/AdminDashboard'
-import AdminOrders from './pages/AdminOrders'
 import AdminCakes from './pages/AdminCakes'
-import AdminReviews from './pages/AdminReviews'
-import AdminMessages from './pages/AdminMessages'
-import AdminCustomOrders from './pages/AdminCustomOrders'
 import AdminCustomers from './pages/AdminCustomers'
-import AdminSettings from './pages/AdminSettings'
 import AdminReports from './pages/AdminReports'
 import AdminCategories from './pages/AdminCategories'
 import AdminFlavors from './pages/AdminFlavors'
@@ -117,18 +111,12 @@ export default function App() {
           <Route path="/setup-admin" element={<SetupAdmin />} />
 
           {/* Admin panel — protected */}
-          <Route path="/admin/dashboard" element={<ProtectedAdminRoute><AdminDashboard /></ProtectedAdminRoute>} />
-          <Route path="/admin/orders" element={<ProtectedAdminRoute><AdminOrders /></ProtectedAdminRoute>} />
           <Route path="/admin/cakes" element={<ProtectedAdminRoute><AdminCakes /></ProtectedAdminRoute>} />
           <Route path="/admin/categories" element={<ProtectedAdminRoute><AdminCategories /></ProtectedAdminRoute>} />
           <Route path="/admin/flavors" element={<ProtectedAdminRoute><AdminFlavors /></ProtectedAdminRoute>} />
-          <Route path="/admin/reviews" element={<ProtectedAdminRoute><AdminReviews /></ProtectedAdminRoute>} />
-          <Route path="/admin/messages" element={<ProtectedAdminRoute><AdminMessages /></ProtectedAdminRoute>} />
-          <Route path="/admin/custom-orders" element={<ProtectedAdminRoute><AdminCustomOrders /></ProtectedAdminRoute>} />
           <Route path="/admin/customers" element={<ProtectedAdminRoute><AdminCustomers /></ProtectedAdminRoute>} />
-          <Route path="/admin/settings" element={<ProtectedAdminRoute><AdminSettings /></ProtectedAdminRoute>} />
           <Route path="/admin/reports" element={<ProtectedAdminRoute><AdminReports /></ProtectedAdminRoute>} />
-          <Route path="/admin" element={<Navigate to="/admin/login" replace />} />
+          <Route path="/admin" element={<Navigate to="/admin/cakes" replace />} />
 
           {/* Customer catch-all */}
           <Route path="/*" element={

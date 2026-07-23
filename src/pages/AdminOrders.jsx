@@ -2,25 +2,20 @@ import { useState, useEffect, useMemo } from 'react'
 import { Link, useLocation, useNavigate } from 'react-router-dom'
 import { motion, AnimatePresence } from 'framer-motion'
 import {
-  LayoutDashboard, ShoppingCart, Package, Users, MessageSquare, Star,
+  ShoppingCart, Package, Users, Star, BarChart3,
   LogOut, Menu, ChevronRight, Search, Filter, Trash2, Eye, RefreshCw,
   AlertCircle, Clock, CheckCircle, ChevronDown, ArrowUpDown, ArrowUp, ArrowDown,
-  Settings, X, Phone, Mail, CreditCard, Calendar
+  X, Phone, Mail, CreditCard, Calendar
 } from 'lucide-react'
 import { useAdminAuth } from '../contexts/AdminAuthContext'
 import { supabase } from '../lib/supabase'
 
 const sidebarLinks = [
-  { to: '/admin/dashboard', label: 'Dashboard', icon: LayoutDashboard },
-  { to: '/admin/orders', label: 'Orders', icon: ShoppingCart },
   { to: '/admin/cakes', label: 'Cakes', icon: Package },
   { to: '/admin/categories', label: 'Categories', icon: Package },
   { to: '/admin/flavors', label: 'Flavors', icon: Package },
-  { to: '/admin/custom-orders', label: 'Custom Orders', icon: Package },
   { to: '/admin/customers', label: 'Customers', icon: Users },
-  { to: '/admin/reviews', label: 'Reviews', icon: Star },
-  { to: '/admin/messages', label: 'Messages', icon: MessageSquare },
-  { to: '/admin/settings', label: 'Settings', icon: Settings },
+  { to: '/admin/reports', label: 'Reports', icon: BarChart3 },
 ]
 
 const ORDER_STATUSES = ['pending', 'confirmed', 'preparing', 'ready', 'delivered', 'cancelled']

@@ -16,7 +16,7 @@ export default function AdminLogin() {
 
   useEffect(() => {
     if (admin || localStorage.getItem('admin_auth') === 'true') {
-      navigate('/admin/dashboard', { replace: true })
+      navigate('/admin/cakes', { replace: true })
     }
   }, [admin, navigate])
 
@@ -28,7 +28,7 @@ export default function AdminLogin() {
     setTimeout(() => {
       if (password === ADMIN_PASSWORD) {
         localStorage.setItem('admin_auth', 'true')
-        navigate('/admin/dashboard', { replace: true })
+        navigate('/admin/cakes', { replace: true })
       } else {
         setError('Invalid password')
         setLoading(false)
