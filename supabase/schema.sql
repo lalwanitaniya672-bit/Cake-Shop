@@ -195,11 +195,11 @@ ALTER TABLE reviews ENABLE ROW LEVEL SECURITY;
 ALTER TABLE contact_messages ENABLE ROW LEVEL SECURITY;
 
 -- Allow all operations for anon (public access)
-CREATE POLICY "allow_all_categories ON categories FOR ALL USING (true) WITH CHECK (true)";
-CREATE POLICY "allow_all_flavors ON flavors FOR ALL USING (true) WITH CHECK (true)";
-CREATE POLICY "allow_all_cakes ON cakes FOR ALL USING (true) WITH CHECK (true)";
-CREATE POLICY "allow_all_customers ON customers FOR ALL USING (true) WITH CHECK (true)";
-CREATE POLICY "allow_all_orders ON orders FOR ALL USING (true) WITH CHECK (true)";
-CREATE POLICY "allow_all_custom_orders ON custom_orders FOR ALL USING (true) WITH CHECK (true)";
-CREATE POLICY "allow_all_reviews ON reviews FOR ALL USING (true) WITH CHECK (true)";
-CREATE POLICY "allow_all_contact_messages ON contact_messages FOR ALL USING (true) WITH CHECK (true)";
+CREATE POLICY "allow_all_categories" ON categories FOR ALL USING (true) WITH CHECK (true);
+CREATE POLICY "allow_all_flavors" ON flavors FOR ALL USING (true) WITH CHECK (true);
+CREATE POLICY "allow_all_cakes" ON cakes FOR ALL USING (true) WITH CHECK (true);
+CREATE POLICY "allow_all_customers" ON customers FOR ALL USING (true) WITH CHECK (true);
+CREATE POLICY "allow_all_orders" ON orders FOR ALL USING (true) WITH CHECK (true);
+CREATE POLICY "allow_all_custom_orders" ON custom_orders FOR ALL USING (true) WITH CHECK (true);
+CREATE POLICY "allow_all_reviews" ON reviews FOR ALL USING (true) WITH CHECK (true);
+CREATE POLICY "allow_all_contact_messages" ON contact_messages FOR ALL USING (true) WITH CHECK (true);
