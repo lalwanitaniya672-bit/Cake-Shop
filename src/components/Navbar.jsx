@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react'
 import { Link, useLocation, useNavigate } from 'react-router-dom'
 import { motion, AnimatePresence } from 'framer-motion'
-import { ShoppingBag, User, LogOut, Menu, X, ChevronDown, Lock } from 'lucide-react'
+import { ShoppingBag, User, LogOut, Menu, X, ChevronDown, Lock, Shield } from 'lucide-react'
 import useCartStore from '../stores/cartStore'
 import useAuthStore from '../stores/authStore'
 
@@ -124,7 +124,16 @@ export default function Navbar() {
               </Link>
             )}
 
-            {/* User Menu - Desktop */}
+            {/* Admin Icon - Desktop */}
+            <Link
+              to="/admin/login"
+              className="hidden lg:flex w-11 h-11 items-center justify-center rounded-full bg-cream-dark hover:bg-chocolate/10 border border-cream-dark/30 transition-all duration-300 hover:shadow-md group"
+              title="Admin Panel"
+            >
+              <Shield className="w-5 h-5 text-chocolate group-hover:text-gold transition-colors" />
+            </Link>
+
+            {/* User Icon - Desktop */}
             <div className="hidden lg:block relative">
               {user ? (
                 <>
@@ -166,10 +175,10 @@ export default function Navbar() {
               ) : (
                 <Link
                   to="/login"
-                  className="flex items-center gap-2 px-5 py-2.5 rounded-full bg-gradient-to-r from-chocolate to-chocolate-light text-white text-sm font-medium hover:shadow-lg hover:shadow-chocolate/20 transition-all duration-300 hover:-translate-y-0.5"
+                  className="flex items-center justify-center w-11 h-11 rounded-full bg-gradient-to-r from-chocolate to-chocolate-light text-white hover:shadow-lg hover:shadow-chocolate/20 transition-all duration-300 hover:-translate-y-0.5"
+                  title="Sign In"
                 >
-                  <User className="w-4 h-4" />
-                  Sign In
+                  <User className="w-5 h-5" />
                 </Link>
               )}
             </div>
@@ -228,9 +237,9 @@ export default function Navbar() {
                   </button>
                 )
               ))}
-              <div className="pt-3 mt-3 border-t border-cream-dark/30">
+              <div className="pt-3 mt-3 border-t border-cream-dark/30 space-y-2">
                 {user ? (
-                  <div className="space-y-2">
+                  <>
                     <div className="px-4 py-3 bg-cream-dark rounded-xl">
                       <p className="text-[10px] text-warm-gray uppercase tracking-wider">Signed in as</p>
                       <p className="text-sm font-medium text-chocolate truncate mt-0.5">{user.email}</p>
@@ -242,15 +251,24 @@ export default function Navbar() {
                       <LogOut className="w-4 h-4 text-warm-gray" />
                       Sign Out
                     </button>
-                  </div>
+                  </>
                 ) : (
-                  <Link
-                    to="/login"
-                    className="flex items-center justify-center gap-2 px-4 py-3.5 rounded-xl bg-gradient-to-r from-chocolate to-chocolate-light text-white text-sm font-medium hover:shadow-lg transition-all duration-300"
-                  >
-                    <User className="w-4 h-4" />
-                    Sign In
-                  </Link>
+                  <>
+                    <Link
+                      to="/login"
+                      className="flex items-center justify-center gap-2 px-4 py-3.5 rounded-xl bg-gradient-to-r from-chocolate to-chocolate-light text-white text-sm font-medium hover:shadow-lg transition-all duration-300"
+                    >
+                      <User className="w-4 h-4" />
+                      Sign In
+                    </Link>
+                    <Link
+                      to="/admin/login"
+                      className="flex items-center justify-center gap-2 px-4 py-3.5 rounded-xl border border-cream-dark bg-white text-chocolate text-sm font-medium hover:bg-cream-dark transition-all duration-300"
+                    >
+                      <Shield className="w-4 h-4" />
+                      Admin Panel
+                    </Link>
+                  </>
                 )}
               </div>
             </div>
