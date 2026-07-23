@@ -2,7 +2,7 @@ import { useState, useEffect, useMemo } from 'react'
 import { Link, useLocation, useNavigate } from 'react-router-dom'
 import { motion, AnimatePresence } from 'framer-motion'
 import {
-  ShoppingCart, Package, Users, Star, BarChart3,
+  ShoppingCart, Package, Users, Star,
   LogOut, Menu, ChevronRight, Search, Filter, Trash2, Eye, RefreshCw,
   AlertCircle, Clock, CheckCircle, ChevronDown, ArrowUpDown, ArrowUp, ArrowDown,
   X, Phone, Mail, CreditCard, Calendar
@@ -15,7 +15,6 @@ const sidebarLinks = [
   { to: '/admin/categories', label: 'Categories', icon: Package },
   { to: '/admin/flavors', label: 'Flavors', icon: Package },
   { to: '/admin/customers', label: 'Customers', icon: Users },
-  { to: '/admin/reports', label: 'Reports', icon: BarChart3 },
 ]
 
 const ORDER_STATUSES = ['pending', 'confirmed', 'preparing', 'ready', 'delivered', 'cancelled']

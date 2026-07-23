@@ -14,7 +14,6 @@ const sidebarLinks = [
   { to: '/admin/categories', label: 'Categories', icon: Package },
   { to: '/admin/flavors', label: 'Flavors', icon: Package },
   { to: '/admin/customers', label: 'Customers', icon: Users },
-  { to: '/admin/reports', label: 'Reports', icon: BarChart3 },
 ]
 
 function AdminSidebar({ isOpen, onClose }) {

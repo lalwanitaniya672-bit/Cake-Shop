@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react'
 import { Link, useLocation, useNavigate } from 'react-router-dom'
 import { motion, AnimatePresence } from 'framer-motion'
 import {
-  Package, Users, BarChart3,
+  Package, Users,
   LogOut, Menu, ChevronRight, Settings, Save, RotateCcw, Upload, Image,
   X, Check, AlertCircle, Clock, Phone, Mail, Globe, Palette, User, Lock
 } from 'lucide-react'
@@ -14,7 +14,6 @@ const sidebarLinks = [
   { to: '/admin/categories', label: 'Categories', icon: Package },
   { to: '/admin/flavors', label: 'Flavors', icon: Package },
   { to: '/admin/customers', label: 'Customers', icon: Users },
-  { to: '/admin/reports', label: 'Reports', icon: BarChart3 },
 ]
 
 function AdminSidebar({ isOpen, onClose }) {

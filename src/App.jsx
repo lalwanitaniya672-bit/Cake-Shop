@@ -26,7 +26,6 @@ import OrderConfirmation from './pages/OrderConfirmation'
 import AdminLogin from './pages/AdminLogin'
 import AdminCakes from './pages/AdminCakes'
 import AdminCustomers from './pages/AdminCustomers'
-import AdminReports from './pages/AdminReports'
 import AdminCategories from './pages/AdminCategories'
 import AdminFlavors from './pages/AdminFlavors'
 import SetupAdmin from './pages/SetupAdmin'
@@ -115,7 +114,6 @@ export default function App() {
           <Route path="/admin/categories" element={<ProtectedAdminRoute><AdminCategories /></ProtectedAdminRoute>} />
           <Route path="/admin/flavors" element={<ProtectedAdminRoute><AdminFlavors /></ProtectedAdminRoute>} />
           <Route path="/admin/customers" element={<ProtectedAdminRoute><AdminCustomers /></ProtectedAdminRoute>} />
-          <Route path="/admin/reports" element={<ProtectedAdminRoute><AdminReports /></ProtectedAdminRoute>} />
           <Route path="/admin" element={<Navigate to="/admin/cakes" replace />} />
 
           {/* Customer catch-all */}

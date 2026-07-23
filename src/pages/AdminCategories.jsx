@@ -2,7 +2,7 @@ import { useState, useEffect, useMemo } from 'react'
 import { Link, useLocation, useNavigate } from 'react-router-dom'
 import { motion, AnimatePresence } from 'framer-motion'
 import {
-  Package, Users, BarChart3,
+  Package, Users,
   LogOut, Menu, ChevronRight, Search, Filter, Trash2, Eye, RefreshCw,
   AlertCircle, Plus, Pencil, Upload, Image, X, EyeOff, ChevronDown
 } from 'lucide-react'
@@ -14,7 +14,6 @@ const sidebarLinks = [
   { to: '/admin/categories', label: 'Categories', icon: Package },
   { to: '/admin/flavors', label: 'Flavors', icon: Package },
   { to: '/admin/customers', label: 'Customers', icon: Users },
-  { to: '/admin/reports', label: 'Reports', icon: BarChart3 },
 ]
 
 const ITEMS_PER_PAGE = 8
