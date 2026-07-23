@@ -122,48 +122,48 @@ function CakeFormModal({ cake, onClose, onSave }) {
 
   return (
     <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4" onClick={onClose}>
-      <motion.div initial={{ scale: 0.95, opacity: 0 }} animate={{ scale: 1, opacity: 1 }} exit={{ scale: 0.95, opacity: 0 }} className="bg-card rounded-3xl max-w-xl w-full max-h-[90vh] overflow-y-auto shadow-2xl" onClick={(e) => e.stopPropagation()}>
-        <div className="flex items-center justify-between p-6 border-b border-cream-dark/30">
-          <h2 className="font-display text-xl font-bold text-chocolate">{cake ? 'Edit Cake' : 'Add New Cake'}</h2>
-          <button onClick={onClose} className="w-8 h-8 rounded-full bg-cream flex items-center justify-center hover:bg-cream-dark transition-colors"><X className="w-4 h-4 text-chocolate" /></button>
+      <motion.div initial={{ scale: 0.95, opacity: 0 }} animate={{ scale: 1, opacity: 1 }} exit={{ scale: 0.95, opacity: 0 }} className="bg-chocolate rounded-3xl max-w-xl w-full max-h-[90vh] overflow-y-auto shadow-2xl" onClick={(e) => e.stopPropagation()}>
+        <div className="flex items-center justify-between p-6 border-b border-white/10">
+          <h2 className="font-display text-xl font-bold text-white">{cake ? 'Edit Cake' : 'Add New Cake'}</h2>
+          <button onClick={onClose} className="w-8 h-8 rounded-full bg-white/10 flex items-center justify-center hover:bg-white/20 transition-colors"><X className="w-4 h-4 text-white" /></button>
         </div>
         <form onSubmit={handleSubmit} className="p-6 space-y-5">
           <div>
-            <label className="text-xs text-warm-gray mb-1 block">Cake Image</label>
-            <div className="relative border-2 border-dashed border-cream-dark rounded-2xl overflow-hidden">
+            <label className="text-xs text-white/60 mb-1 block">Cake Image</label>
+            <div className="relative border-2 border-dashed border-white/20 rounded-2xl overflow-hidden">
               {imagePreview ? (
                 <div className="relative"><img src={imagePreview} alt="Preview" className="w-full h-48 object-cover" /><label className="absolute inset-0 bg-black/40 flex items-center justify-center cursor-pointer opacity-0 hover:opacity-100 transition-opacity"><div className="text-center text-white"><Upload className="w-6 h-6 mx-auto mb-1" /><span className="text-xs">Change Image</span></div><input type="file" accept="image/*" onChange={handleImageChange} className="hidden" /></label></div>
               ) : (
-                <label className="flex flex-col items-center justify-center py-12 cursor-pointer"><Image className="w-10 h-10 text-warm-gray/40 mb-2" /><span className="text-sm text-warm-gray">Click to upload image</span><span className="text-xs text-warm-gray/60">PNG, JPG up to 5MB</span><input type="file" accept="image/*" onChange={handleImageChange} className="hidden" /></label>
+                <label className="flex flex-col items-center justify-center py-12 cursor-pointer"><Image className="w-10 h-10 text-white/30 mb-2" /><span className="text-sm text-white/50">Click to upload image</span><span className="text-xs text-white/30">PNG, JPG up to 5MB</span><input type="file" accept="image/*" onChange={handleImageChange} className="hidden" /></label>
               )}
             </div>
           </div>
 
-          <div><label className="text-xs text-warm-gray mb-1 block">Cake Name *</label><input type="text" value={form.name} onChange={(e) => setForm({ ...form, name: e.target.value })} required className="w-full px-4 py-3 rounded-xl border border-cream-dark bg-cream text-sm text-charcoal focus:outline-none focus:ring-2 focus:ring-gold/30" placeholder="e.g. Red Velvet Dream" /></div>
+          <div><label className="text-xs text-white/60 mb-1 block">Cake Name *</label><input type="text" value={form.name} onChange={(e) => setForm({ ...form, name: e.target.value })} required className="w-full px-4 py-3 rounded-xl border border-white/10 bg-chocolate-light text-sm text-white focus:outline-none focus:ring-2 focus:ring-gold/30 placeholder-white/30" placeholder="e.g. Red Velvet Dream" /></div>
 
           <div className="grid grid-cols-2 gap-4">
-            <div><label className="text-xs text-warm-gray mb-1 block">Price (₹) *</label><input type="number" value={form.price} onChange={(e) => setForm({ ...form, price: e.target.value })} required min="0" step="0.01" className="w-full px-4 py-3 rounded-xl border border-cream-dark bg-cream text-sm text-charcoal focus:outline-none focus:ring-2 focus:ring-gold/30" placeholder="1299" /></div>
-            <div><label className="text-xs text-warm-gray mb-1 block">Serves</label><input type="text" value={form.serves} onChange={(e) => setForm({ ...form, serves: e.target.value })} className="w-full px-4 py-3 rounded-xl border border-cream-dark bg-cream text-sm text-charcoal focus:outline-none focus:ring-2 focus:ring-gold/30" placeholder="8-10 people" /></div>
+            <div><label className="text-xs text-white/60 mb-1 block">Price (₹) *</label><input type="number" value={form.price} onChange={(e) => setForm({ ...form, price: e.target.value })} required min="0" step="0.01" className="w-full px-4 py-3 rounded-xl border border-white/10 bg-chocolate-light text-sm text-white focus:outline-none focus:ring-2 focus:ring-gold/30 placeholder-white/30" placeholder="1299" /></div>
+            <div><label className="text-xs text-white/60 mb-1 block">Serves</label><input type="text" value={form.serves} onChange={(e) => setForm({ ...form, serves: e.target.value })} className="w-full px-4 py-3 rounded-xl border border-white/10 bg-chocolate-light text-sm text-white focus:outline-none focus:ring-2 focus:ring-gold/30 placeholder-white/30" placeholder="8-10 people" /></div>
           </div>
 
-          <div><label className="text-xs text-warm-gray mb-1 block">Category *</label><select value={form.category} onChange={(e) => setForm({ ...form, category: e.target.value })} required className="w-full px-4 py-3 rounded-xl border border-cream-dark bg-cream text-sm text-charcoal focus:outline-none focus:ring-2 focus:ring-gold/30 appearance-none"><option value="">Select Category</option>{CATEGORIES.map(c => <option key={c} value={c}>{c}</option>)}</select></div>
+          <div><label className="text-xs text-white/60 mb-1 block">Category *</label><select value={form.category} onChange={(e) => setForm({ ...form, category: e.target.value })} required className="w-full px-4 py-3 rounded-xl border border-white/10 bg-chocolate-light text-sm text-white focus:outline-none focus:ring-2 focus:ring-gold/30 appearance-none"><option value="">Select Category</option>{CATEGORIES.map(c => <option key={c} value={c}>{c}</option>)}</select></div>
 
-          <div><label className="text-xs text-warm-gray mb-1 block">Flavours (comma separated)</label><input type="text" value={form.flavours} onChange={(e) => setForm({ ...form, flavours: e.target.value })} className="w-full px-4 py-3 rounded-xl border border-cream-dark bg-cream text-sm text-charcoal focus:outline-none focus:ring-2 focus:ring-gold/30" placeholder="e.g. Classic, Strawberry, Blueberry" /></div>
+          <div><label className="text-xs text-white/60 mb-1 block">Flavours (comma separated)</label><input type="text" value={form.flavours} onChange={(e) => setForm({ ...form, flavours: e.target.value })} className="w-full px-4 py-3 rounded-xl border border-white/10 bg-chocolate-light text-sm text-white focus:outline-none focus:ring-2 focus:ring-gold/30 placeholder-white/30" placeholder="e.g. Classic, Strawberry, Blueberry" /></div>
 
-          <div><label className="text-xs text-warm-gray mb-1 block">Description</label><textarea value={form.description} onChange={(e) => setForm({ ...form, description: e.target.value })} rows={3} className="w-full px-4 py-3 rounded-xl border border-cream-dark bg-cream text-sm text-charcoal focus:outline-none focus:ring-2 focus:ring-gold/30 resize-none" placeholder="Describe this cake..." /></div>
+          <div><label className="text-xs text-white/60 mb-1 block">Description</label><textarea value={form.description} onChange={(e) => setForm({ ...form, description: e.target.value })} rows={3} className="w-full px-4 py-3 rounded-xl border border-white/10 bg-chocolate-light text-sm text-white focus:outline-none focus:ring-2 focus:ring-gold/30 resize-none placeholder-white/30" placeholder="Describe this cake..." /></div>
 
-          <div><label className="text-xs text-warm-gray mb-1 block">Badge (optional)</label><input type="text" value={form.badge} onChange={(e) => setForm({ ...form, badge: e.target.value })} className="w-full px-4 py-3 rounded-xl border border-cream-dark bg-cream text-sm text-charcoal focus:outline-none focus:ring-2 focus:ring-gold/30" placeholder="e.g. Bestseller, New, Premium" /></div>
+          <div><label className="text-xs text-white/60 mb-1 block">Badge (optional)</label><input type="text" value={form.badge} onChange={(e) => setForm({ ...form, badge: e.target.value })} className="w-full px-4 py-3 rounded-xl border border-white/10 bg-chocolate-light text-sm text-white focus:outline-none focus:ring-2 focus:ring-gold/30 placeholder-white/30" placeholder="e.g. Bestseller, New, Premium" /></div>
 
           <div className="flex gap-4">
-            <label className="flex items-center gap-2 cursor-pointer"><input type="checkbox" checked={form.is_active} onChange={(e) => setForm({ ...form, is_active: e.target.checked })} className="w-4 h-4 rounded border-cream-dark text-chocolate focus:ring-gold/30" /><span className="text-sm text-charcoal">In Stock</span></label>
-            <label className="flex items-center gap-2 cursor-pointer"><input type="checkbox" checked={form.is_featured} onChange={(e) => setForm({ ...form, is_featured: e.target.checked })} className="w-4 h-4 rounded border-cream-dark text-chocolate focus:ring-gold/30" /><span className="text-sm text-charcoal">Featured</span></label>
+            <label className="flex items-center gap-2 cursor-pointer"><input type="checkbox" checked={form.is_active} onChange={(e) => setForm({ ...form, is_active: e.target.checked })} className="w-4 h-4 rounded border-white/20 bg-chocolate-light text-gold focus:ring-gold/30" /><span className="text-sm text-white/80">In Stock</span></label>
+            <label className="flex items-center gap-2 cursor-pointer"><input type="checkbox" checked={form.is_featured} onChange={(e) => setForm({ ...form, is_featured: e.target.checked })} className="w-4 h-4 rounded border-white/20 bg-chocolate-light text-gold focus:ring-gold/30" /><span className="text-sm text-white/80">Featured</span></label>
           </div>
 
-          {uploading && <div className="space-y-2"><div className="flex justify-between text-xs text-warm-gray"><span>Uploading...</span><span>{uploadProgress}%</span></div><div className="h-2 bg-cream rounded-full overflow-hidden"><motion.div className="h-full bg-gradient-to-r from-gold to-gold-light rounded-full" initial={{ width: 0 }} animate={{ width: `${uploadProgress}%` }} /></div></div>}
+          {uploading && <div className="space-y-2"><div className="flex justify-between text-xs text-white/50"><span>Uploading...</span><span>{uploadProgress}%</span></div><div className="h-2 bg-chocolate-light rounded-full overflow-hidden"><motion.div className="h-full bg-gradient-to-r from-gold to-gold-light rounded-full" initial={{ width: 0 }} animate={{ width: `${uploadProgress}%` }} /></div></div>}
 
           <div className="flex gap-3 pt-2">
-            <button type="button" onClick={onClose} className="flex-1 py-3 rounded-xl border border-cream-dark text-sm font-medium text-chocolate hover:bg-cream-dark transition-colors">Cancel</button>
-            <button type="submit" disabled={uploading} className="flex-1 py-3 rounded-xl bg-chocolate text-white text-sm font-medium hover:bg-chocolate-light transition-colors disabled:opacity-50">{uploading ? 'Saving...' : cake ? 'Update Cake' : 'Add Cake'}</button>
+            <button type="button" onClick={onClose} className="flex-1 py-3 rounded-xl border border-white/15 text-sm font-medium text-white/70 hover:bg-white/10 transition-colors">Cancel</button>
+            <button type="submit" disabled={uploading} className="flex-1 py-3 rounded-xl bg-gradient-to-r from-gold to-gold-light text-chocolate text-sm font-semibold hover:shadow-lg hover:shadow-gold/20 transition-all disabled:opacity-50">{uploading ? 'Saving...' : cake ? 'Update Cake' : 'Add Cake'}</button>
           </div>
         </form>
       </motion.div>
