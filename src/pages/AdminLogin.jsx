@@ -4,7 +4,7 @@ import { motion } from 'framer-motion'
 import { Lock, Eye, EyeOff, ArrowRight } from 'lucide-react'
 import { useAdminAuth } from '../contexts/AdminAuthContext'
 
-const ADMIN_EMAIL = 'admin@thevelvetcrumb.com'
+const ADMIN_EMAIL = 'admin@gmail.com'
 
 export default function AdminLogin() {
   const [password, setPassword] = useState('')

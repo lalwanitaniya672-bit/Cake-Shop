@@ -16,7 +16,7 @@ export default function SetupAdmin() {
 
           <div className="bg-blue-50 border border-blue-200 rounded-xl p-4 text-sm text-blue-800">
             <strong>Step 2:</strong> Go to Authentication → Users → <strong>Add User</strong><br />
-            Email: <code className="bg-blue-100 px-1 rounded">admin@thevelvetcrumb.com</code><br />
+            Email: <code className="bg-blue-100 px-1 rounded">admin@gmail.com</code><br />
             Password: set your own secure password<br />
             Check <strong>&quot;Auto Confirm User&quot;</strong>
           </div>
