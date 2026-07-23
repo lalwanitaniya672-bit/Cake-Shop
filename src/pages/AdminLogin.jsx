@@ -29,7 +29,12 @@ export default function AdminLogin() {
       await signIn(ADMIN_EMAIL, password)
       navigate('/admin/dashboard', { replace: true })
     } catch (err) {
-      setError('Invalid password. Please try again.')
+      const msg = err?.message || 'Login failed'
+      if (msg.includes('Invalid login credentials')) {
+        setError('No admin account found. Please create one in Supabase Dashboard → Authentication → Users with email: admin@gmail.com')
+      } else {
+        setError(msg)
+      }
       setLoading(false)
     }
   }
