@@ -4,6 +4,7 @@ import Navbar from './components/Navbar'
 import Footer from './components/Footer'
 import WhatsAppButton from './components/WhatsAppButton'
 import ProtectedAdminRoute from './components/ProtectedAdminRoute'
+import RequireAuth from './components/RequireAuth'
 import { AdminAuthProvider } from './contexts/AdminAuthContext'
 
 import Home from './pages/Home'
@@ -35,18 +36,18 @@ function PublicRoutes() {
       <main>
         <Routes>
           <Route path="/" element={<Home />} />
-          <Route path="/about" element={<About />} />
-          <Route path="/trust" element={<Trust />} />
-          <Route path="/collection" element={<CakeCollection />} />
-          <Route path="/cake/:id" element={<ProductDetail />} />
-          <Route path="/custom-orders" element={<CustomOrders />} />
-          <Route path="/payment" element={<PaymentPage />} />
-          <Route path="/order-confirmation" element={<OrderConfirmation />} />
-          <Route path="/gallery" element={<Gallery />} />
-          <Route path="/contact" element={<Contact />} />
-          <Route path="/cart" element={<Cart />} />
-          <Route path="/checkout" element={<Checkout />} />
-          <Route path="/reviews" element={<Reviews />} />
+          <Route path="/about" element={<RequireAuth><About /></RequireAuth>} />
+          <Route path="/trust" element={<RequireAuth><Trust /></RequireAuth>} />
+          <Route path="/collection" element={<RequireAuth><CakeCollection /></RequireAuth>} />
+          <Route path="/cake/:id" element={<RequireAuth><ProductDetail /></RequireAuth>} />
+          <Route path="/custom-orders" element={<RequireAuth><CustomOrders /></RequireAuth>} />
+          <Route path="/payment" element={<RequireAuth><PaymentPage /></RequireAuth>} />
+          <Route path="/order-confirmation" element={<RequireAuth><OrderConfirmation /></RequireAuth>} />
+          <Route path="/gallery" element={<RequireAuth><Gallery /></RequireAuth>} />
+          <Route path="/contact" element={<RequireAuth><Contact /></RequireAuth>} />
+          <Route path="/cart" element={<RequireAuth><Cart /></RequireAuth>} />
+          <Route path="/checkout" element={<RequireAuth><Checkout /></RequireAuth>} />
+          <Route path="/reviews" element={<RequireAuth><Reviews /></RequireAuth>} />
           <Route path="*" element={
             <div className="min-h-screen flex items-center justify-center">
               <div className="text-center">
@@ -73,7 +74,7 @@ export default function App() {
       <ScrollToTop />
       <AdminAuthProvider>
         <Routes>
-          {/* Customer auth */}
+          {/* Customer auth - always accessible */}
           <Route path="/login" element={<Login />} />
           <Route path="/signup" element={<Signup />} />
 
@@ -88,7 +89,7 @@ export default function App() {
           <Route path="/admin/customers" element={<ProtectedAdminRoute><AdminCustomers /></ProtectedAdminRoute>} />
           <Route path="/admin" element={<Navigate to="/admin/cakes" replace />} />
 
-          {/* Public routes */}
+          {/* Public routes - Home always accessible, others locked */}
           <Route path="/*" element={<PublicRoutes />} />
         </Routes>
       </AdminAuthProvider>

@@ -1,8 +1,9 @@
 import { useState, useEffect, useCallback } from 'react'
-import { Link } from 'react-router-dom'
+import { Link, useNavigate } from 'react-router-dom'
 import { motion, AnimatePresence } from 'framer-motion'
 import { ArrowRight, Star } from 'lucide-react'
 import { supabase } from '../lib/supabase'
+import useAuthStore from '../stores/authStore'
 import FadeInSection from '../components/FadeInSection'
 import StarRating from '../components/StarRating'
 
@@ -17,6 +18,13 @@ export default function Home() {
   const [featuredCakes, setFeaturedCakes] = useState([])
   const [loading, setLoading] = useState(true)
   const [currentSlide, setCurrentSlide] = useState(0)
+  const user = useAuthStore((s) => s.user)
+  const navigate = useNavigate()
+
+  const handleLockedClick = (e) => {
+    e.preventDefault()
+    navigate('/login', { state: { from: '/', message: 'Please sign in to continue.' } })
+  }
 
   const nextSlide = useCallback(() => {
     setCurrentSlide((prev) => (prev + 1) % heroSlides.length)
@@ -114,19 +122,38 @@ export default function Home() {
             transition={{ duration: 0.6, delay: 0.4 }}
             className="flex flex-col sm:flex-row gap-4 mb-10"
           >
-            <Link
-              to="/collection"
-              className="group inline-flex items-center justify-center gap-2 bg-gradient-to-r from-gold to-gold-light text-chocolate px-8 py-4 rounded-full text-sm font-semibold hover:shadow-xl hover:shadow-gold/30 transition-all duration-300 hover:-translate-y-0.5"
-            >
-              Explore Collection
-              <ArrowRight className="w-4 h-4 transition-transform duration-300 group-hover:translate-x-1" />
-            </Link>
-            <Link
-              to="/custom-orders"
-              className="inline-flex items-center justify-center gap-2 bg-white/10 backdrop-blur-sm border border-white/20 text-white px-8 py-4 rounded-full text-sm font-medium hover:bg-white/20 transition-all duration-300"
-            >
-              Order Now
-            </Link>
+            {user ? (
+              <Link
+                to="/collection"
+                className="group inline-flex items-center justify-center gap-2 bg-gradient-to-r from-gold to-gold-light text-chocolate px-8 py-4 rounded-full text-sm font-semibold hover:shadow-xl hover:shadow-gold/30 transition-all duration-300 hover:-translate-y-0.5"
+              >
+                Explore Collection
+                <ArrowRight className="w-4 h-4 transition-transform duration-300 group-hover:translate-x-1" />
+              </Link>
+            ) : (
+              <button
+                onClick={handleLockedClick}
+                className="group inline-flex items-center justify-center gap-2 bg-gradient-to-r from-gold to-gold-light text-chocolate px-8 py-4 rounded-full text-sm font-semibold hover:shadow-xl hover:shadow-gold/30 transition-all duration-300 hover:-translate-y-0.5"
+              >
+                Explore Collection
+                <ArrowRight className="w-4 h-4 transition-transform duration-300 group-hover:translate-x-1" />
+              </button>
+            )}
+            {user ? (
+              <Link
+                to="/custom-orders"
+                className="inline-flex items-center justify-center gap-2 bg-white/10 backdrop-blur-sm border border-white/20 text-white px-8 py-4 rounded-full text-sm font-medium hover:bg-white/20 transition-all duration-300"
+              >
+                Order Now
+              </Link>
+            ) : (
+              <button
+                onClick={handleLockedClick}
+                className="inline-flex items-center justify-center gap-2 bg-white/10 backdrop-blur-sm border border-white/20 text-white px-8 py-4 rounded-full text-sm font-medium hover:bg-white/20 transition-all duration-300"
+              >
+                Order Now
+              </button>
+            )}
           </motion.div>
 
           <motion.div
@@ -184,79 +211,149 @@ export default function Home() {
               {/* Mobile Grid */}
               <div className="grid grid-cols-2 gap-3 md:hidden">
                 {featuredCakes.map((cake) => (
-                  <Link
-                    key={cake.id}
-                    to={`/cake/${cake.slug}`}
-                    className="group bg-card rounded-2xl overflow-hidden shadow-sm hover:shadow-lg transition-all duration-500 hover:-translate-y-1 block border border-cream-dark/30"
-                  >
-                    <div className="relative h-36 overflow-hidden">
-                      <img
-                        src={cake.image_url}
-                        alt={cake.name}
-                        className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110"
-                        loading="lazy"
-                      />
-                      {cake.badge && (
-                        <span className="absolute top-1.5 left-1.5 bg-gold text-white text-[8px] font-semibold uppercase tracking-wider px-2 py-0.5 rounded-full">
-                          {cake.badge}
-                        </span>
-                      )}
-                    </div>
-                    <div className="p-2.5 text-center">
-                      <h3 className="font-display text-[15px] font-bold text-chocolate group-hover:text-gold transition-colors duration-300 leading-tight line-clamp-1">
-                        {cake.name}
-                      </h3>
-                      <div className="flex justify-center mt-1.5">
-                        <span className="font-display text-[17px] font-bold text-chocolate">₹{cake.price}</span>
+                  user ? (
+                    <Link
+                      key={cake.id}
+                      to={`/cake/${cake.slug}`}
+                      className="group bg-card rounded-2xl overflow-hidden shadow-sm hover:shadow-lg transition-all duration-500 hover:-translate-y-1 block border border-cream-dark/30"
+                    >
+                      <div className="relative h-36 overflow-hidden">
+                        <img
+                          src={cake.image_url}
+                          alt={cake.name}
+                          className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110"
+                          loading="lazy"
+                        />
+                        {cake.badge && (
+                          <span className="absolute top-1.5 left-1.5 bg-gold text-white text-[8px] font-semibold uppercase tracking-wider px-2 py-0.5 rounded-full">
+                            {cake.badge}
+                          </span>
+                        )}
                       </div>
-                    </div>
-                  </Link>
+                      <div className="p-2.5 text-center">
+                        <h3 className="font-display text-[15px] font-bold text-chocolate group-hover:text-gold transition-colors duration-300 leading-tight line-clamp-1">
+                          {cake.name}
+                        </h3>
+                        <div className="flex justify-center mt-1.5">
+                          <span className="font-display text-[17px] font-bold text-chocolate">₹{cake.price}</span>
+                        </div>
+                      </div>
+                    </Link>
+                  ) : (
+                    <button
+                      key={cake.id}
+                      onClick={handleLockedClick}
+                      className="group bg-card rounded-2xl overflow-hidden shadow-sm hover:shadow-lg transition-all duration-500 hover:-translate-y-1 block border border-cream-dark/30 text-left"
+                    >
+                      <div className="relative h-36 overflow-hidden">
+                        <img
+                          src={cake.image_url}
+                          alt={cake.name}
+                          className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110"
+                          loading="lazy"
+                        />
+                        {cake.badge && (
+                          <span className="absolute top-1.5 left-1.5 bg-gold text-white text-[8px] font-semibold uppercase tracking-wider px-2 py-0.5 rounded-full">
+                            {cake.badge}
+                          </span>
+                        )}
+                      </div>
+                      <div className="p-2.5 text-center">
+                        <h3 className="font-display text-[15px] font-bold text-chocolate group-hover:text-gold transition-colors duration-300 leading-tight line-clamp-1">
+                          {cake.name}
+                        </h3>
+                        <div className="flex justify-center mt-1.5">
+                          <span className="font-display text-[17px] font-bold text-chocolate">₹{cake.price}</span>
+                        </div>
+                      </div>
+                    </button>
+                  )
                 ))}
               </div>
 
               {/* Desktop Grid */}
               <div className="hidden md:grid md:grid-cols-2 lg:grid-cols-3 gap-6">
                 {featuredCakes.map((cake) => (
-                  <Link
-                    key={cake.id}
-                    to={`/cake/${cake.slug}`}
-                    className="group bg-card rounded-3xl overflow-hidden shadow-sm hover:shadow-xl transition-all duration-500 hover:-translate-y-2 block border border-cream-dark/30"
-                  >
-                    <div className="relative h-64 overflow-hidden">
-                      <img
-                        src={cake.image_url}
-                        alt={cake.name}
-                        className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110"
-                        loading="lazy"
-                      />
-                      {cake.badge && (
-                        <span className="absolute top-4 left-4 bg-gold text-white text-[10px] font-semibold uppercase tracking-wider px-3 py-1.5 rounded-full">
-                          {cake.badge}
-                        </span>
-                      )}
-                    </div>
-                    <div className="p-6 text-center">
-                      <span className="text-xs uppercase tracking-wider text-gold font-semibold">{cake.category}</span>
-                      <h3 className="font-display text-[28px] font-bold text-chocolate group-hover:text-gold transition-colors duration-300 leading-tight mt-1.5">
-                        {cake.name}
-                      </h3>
-                      <span className="font-display text-[28px] font-bold text-chocolate block mt-1">₹{cake.price}</span>
-                      <p className="text-[15px] text-charcoal/60 leading-relaxed mt-2">{cake.short_description}</p>
-                    </div>
-                  </Link>
+                  user ? (
+                    <Link
+                      key={cake.id}
+                      to={`/cake/${cake.slug}`}
+                      className="group bg-card rounded-3xl overflow-hidden shadow-sm hover:shadow-xl transition-all duration-500 hover:-translate-y-2 block border border-cream-dark/30"
+                    >
+                      <div className="relative h-64 overflow-hidden">
+                        <img
+                          src={cake.image_url}
+                          alt={cake.name}
+                          className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110"
+                          loading="lazy"
+                        />
+                        {cake.badge && (
+                          <span className="absolute top-4 left-4 bg-gold text-white text-[10px] font-semibold uppercase tracking-wider px-3 py-1.5 rounded-full">
+                            {cake.badge}
+                          </span>
+                        )}
+                      </div>
+                      <div className="p-6 text-center">
+                        <span className="text-xs uppercase tracking-wider text-gold font-semibold">{cake.category}</span>
+                        <h3 className="font-display text-[28px] font-bold text-chocolate group-hover:text-gold transition-colors duration-300 leading-tight mt-1.5">
+                          {cake.name}
+                        </h3>
+                        <span className="font-display text-[28px] font-bold text-chocolate block mt-1">₹{cake.price}</span>
+                        <p className="text-[15px] text-charcoal/60 leading-relaxed mt-2">{cake.short_description}</p>
+                      </div>
+                    </Link>
+                  ) : (
+                    <button
+                      key={cake.id}
+                      onClick={handleLockedClick}
+                      className="group bg-card rounded-3xl overflow-hidden shadow-sm hover:shadow-xl transition-all duration-500 hover:-translate-y-2 block border border-cream-dark/30 text-left"
+                    >
+                      <div className="relative h-64 overflow-hidden">
+                        <img
+                          src={cake.image_url}
+                          alt={cake.name}
+                          className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110"
+                          loading="lazy"
+                        />
+                        {cake.badge && (
+                          <span className="absolute top-4 left-4 bg-gold text-white text-[10px] font-semibold uppercase tracking-wider px-3 py-1.5 rounded-full">
+                            {cake.badge}
+                          </span>
+                        )}
+                      </div>
+                      <div className="p-6 text-center">
+                        <span className="text-xs uppercase tracking-wider text-gold font-semibold">{cake.category}</span>
+                        <h3 className="font-display text-[28px] font-bold text-chocolate group-hover:text-gold transition-colors duration-300 leading-tight mt-1.5">
+                          {cake.name}
+                        </h3>
+                        <span className="font-display text-[28px] font-bold text-chocolate block mt-1">₹{cake.price}</span>
+                        <p className="text-[15px] text-charcoal/60 leading-relaxed mt-2">{cake.short_description}</p>
+                      </div>
+                    </button>
+                  )
                 ))}
               </div>
             </>
           )}
 
           <FadeInSection className="text-center mt-8">
-            <Link
-              to="/collection"
-              className="inline-flex items-center gap-2 bg-chocolate text-white px-6 py-3 rounded-full text-sm font-medium hover:bg-chocolate-light transition-all duration-300 hover:shadow-lg hover:-translate-y-0.5 group"
-            >
-              View Full Collection
-              <ArrowRight className="w-4 h-4 transition-transform duration-300 group-hover:translate-x-1" />
-            </Link>
+            {user ? (
+              <Link
+                to="/collection"
+                className="inline-flex items-center gap-2 bg-chocolate text-white px-6 py-3 rounded-full text-sm font-medium hover:bg-chocolate-light transition-all duration-300 hover:shadow-lg hover:-translate-y-0.5 group"
+              >
+                View Full Collection
+                <ArrowRight className="w-4 h-4 transition-transform duration-300 group-hover:translate-x-1" />
+              </Link>
+            ) : (
+              <button
+                onClick={handleLockedClick}
+                className="inline-flex items-center gap-2 bg-chocolate text-white px-6 py-3 rounded-full text-sm font-medium hover:bg-chocolate-light transition-all duration-300 hover:shadow-lg hover:-translate-y-0.5 group"
+              >
+                View Full Collection
+                <ArrowRight className="w-4 h-4 transition-transform duration-300 group-hover:translate-x-1" />
+              </button>
+            )}
           </FadeInSection>
         </div>
       </section>
@@ -284,19 +381,38 @@ export default function Home() {
                   we'd love to bring your vision to life.
                 </p>
                 <div className="flex flex-col sm:flex-row flex-wrap justify-center gap-4">
-                  <Link
-                    to="/custom-orders"
-                    className="inline-flex items-center justify-center gap-2 bg-gold text-chocolate px-8 py-4 rounded-full text-sm font-semibold hover:bg-gold-light transition-all duration-300 hover:shadow-xl hover:-translate-y-0.5"
-                  >
-                    Start Your Order
-                    <ArrowRight className="w-4 h-4" />
-                  </Link>
-                  <Link
-                    to="/contact"
-                    className="inline-flex items-center justify-center gap-2 border-2 border-white/20 text-white px-8 py-4 rounded-full text-sm font-medium hover:border-white/40 hover:bg-white/10 transition-all duration-300"
-                  >
-                    Get in Touch
-                  </Link>
+                  {user ? (
+                    <Link
+                      to="/custom-orders"
+                      className="inline-flex items-center justify-center gap-2 bg-gold text-chocolate px-8 py-4 rounded-full text-sm font-semibold hover:bg-gold-light transition-all duration-300 hover:shadow-xl hover:-translate-y-0.5"
+                    >
+                      Start Your Order
+                      <ArrowRight className="w-4 h-4" />
+                    </Link>
+                  ) : (
+                    <button
+                      onClick={handleLockedClick}
+                      className="inline-flex items-center justify-center gap-2 bg-gold text-chocolate px-8 py-4 rounded-full text-sm font-semibold hover:bg-gold-light transition-all duration-300 hover:shadow-xl hover:-translate-y-0.5"
+                    >
+                      Start Your Order
+                      <ArrowRight className="w-4 h-4" />
+                    </button>
+                  )}
+                  {user ? (
+                    <Link
+                      to="/contact"
+                      className="inline-flex items-center justify-center gap-2 border-2 border-white/20 text-white px-8 py-4 rounded-full text-sm font-medium hover:border-white/40 hover:bg-white/10 transition-all duration-300"
+                    >
+                      Get in Touch
+                    </Link>
+                  ) : (
+                    <button
+                      onClick={handleLockedClick}
+                      className="inline-flex items-center justify-center gap-2 border-2 border-white/20 text-white px-8 py-4 rounded-full text-sm font-medium hover:border-white/40 hover:bg-white/10 transition-all duration-300"
+                    >
+                      Get in Touch
+                    </button>
+                  )}
                 </div>
               </div>
             </div>

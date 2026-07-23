@@ -1,12 +1,12 @@
 import { useState, useEffect } from 'react'
-import { Link, useLocation } from 'react-router-dom'
+import { Link, useLocation, useNavigate } from 'react-router-dom'
 import { motion, AnimatePresence } from 'framer-motion'
-import { ShoppingBag, User, LogOut, Menu, X, ChevronDown } from 'lucide-react'
+import { ShoppingBag, User, LogOut, Menu, X, ChevronDown, Lock } from 'lucide-react'
 import useCartStore from '../stores/cartStore'
 import useAuthStore from '../stores/authStore'
 
-const navLinks = [
-  { to: '/', label: 'Home' },
+const allNavLinks = [
+  { to: '/', label: 'Home', public: true },
   { to: '/about', label: 'About' },
   { to: '/trust', label: 'Why Us' },
   { to: '/collection', label: 'Collection' },
@@ -21,8 +21,11 @@ export default function Navbar() {
   const [scrolled, setScrolled] = useState(false)
   const [showUserMenu, setShowUserMenu] = useState(false)
   const location = useLocation()
+  const navigate = useNavigate()
   const totalItems = useCartStore((s) => s.getTotalItems())
   const { user, signOut } = useAuthStore()
+
+  const navLinks = user ? allNavLinks : allNavLinks.filter((l) => l.public)
 
   useEffect(() => {
     const handleScroll = () => setScrolled(window.scrollY > 20)
@@ -34,6 +37,11 @@ export default function Navbar() {
     setIsOpen(false)
     setShowUserMenu(false)
   }, [location])
+
+  const handleLockedClick = (e) => {
+    e.preventDefault()
+    navigate('/login', { state: { from: '/', message: 'Please sign in to continue.' } })
+  }
 
   return (
     <nav
@@ -64,45 +72,57 @@ export default function Navbar() {
           {/* Desktop Nav */}
           <div className="hidden lg:flex items-center gap-1 bg-cream-dark rounded-full px-2 py-1.5 border border-cream-dark/50">
             {navLinks.map((link) => (
-              <Link
-                key={link.to}
-                to={link.to}
-                className={`relative px-4 py-2 text-sm font-medium rounded-full transition-all duration-300 ${
-                  location.pathname === link.to
-                    ? 'text-chocolate bg-gradient-to-r from-gold/15 to-rose/10 shadow-sm'
-                    : 'text-charcoal/60 hover:text-chocolate hover:bg-white/80'
-                }`}
-              >
-                {link.label}
-                {location.pathname === link.to && (
-                  <motion.span
-                    layoutId="activeNav"
-                    className="absolute -bottom-1 left-1/2 -translate-x-1/2 w-5 h-0.5 rounded-full bg-gradient-to-r from-gold to-rose"
-                    transition={{ type: 'spring', stiffness: 300, damping: 30 }}
-                  />
-                )}
-              </Link>
+              user ? (
+                <Link
+                  key={link.to}
+                  to={link.to}
+                  className={`relative px-4 py-2 text-sm font-medium rounded-full transition-all duration-300 ${
+                    location.pathname === link.to
+                      ? 'text-chocolate bg-gradient-to-r from-gold/15 to-rose/10 shadow-sm'
+                      : 'text-charcoal/60 hover:text-chocolate hover:bg-white/80'
+                  }`}
+                >
+                  {link.label}
+                  {location.pathname === link.to && (
+                    <motion.span
+                      layoutId="activeNav"
+                      className="absolute -bottom-1 left-1/2 -translate-x-1/2 w-5 h-0.5 rounded-full bg-gradient-to-r from-gold to-rose"
+                      transition={{ type: 'spring', stiffness: 300, damping: 30 }}
+                    />
+                  )}
+                </Link>
+              ) : (
+                <button
+                  key={link.to}
+                  onClick={handleLockedClick}
+                  className="relative px-4 py-2 text-sm font-medium rounded-full transition-all duration-300 text-charcoal/60 hover:text-chocolate hover:bg-white/80"
+                >
+                  {link.label}
+                </button>
+              )
             ))}
           </div>
 
           {/* Right Actions */}
           <div className="flex items-center gap-2">
-            {/* Cart */}
-            <Link
-              to="/cart"
-              className="relative w-11 h-11 flex items-center justify-center rounded-full bg-cream-dark hover:bg-chocolate/10 border border-cream-dark/30 transition-all duration-300 hover:shadow-md"
-            >
-              <ShoppingBag className="w-5 h-5 text-chocolate" />
-              {totalItems > 0 && (
-                <motion.span
-                  initial={{ scale: 0 }}
-                  animate={{ scale: 1 }}
-                  className="absolute -top-1 -right-1 w-5 h-5 bg-gradient-to-br from-rose to-rose-dark text-white text-[10px] font-bold rounded-full flex items-center justify-center shadow-lg shadow-rose/30"
-                >
-                  {totalItems}
-                </motion.span>
-              )}
-            </Link>
+            {/* Cart - only for signed-in users */}
+            {user && (
+              <Link
+                to="/cart"
+                className="relative w-11 h-11 flex items-center justify-center rounded-full bg-cream-dark hover:bg-chocolate/10 border border-cream-dark/30 transition-all duration-300 hover:shadow-md"
+              >
+                <ShoppingBag className="w-5 h-5 text-chocolate" />
+                {totalItems > 0 && (
+                  <motion.span
+                    initial={{ scale: 0 }}
+                    animate={{ scale: 1 }}
+                    className="absolute -top-1 -right-1 w-5 h-5 bg-gradient-to-br from-rose to-rose-dark text-white text-[10px] font-bold rounded-full flex items-center justify-center shadow-lg shadow-rose/30"
+                  >
+                    {totalItems}
+                  </motion.span>
+                )}
+              </Link>
+            )}
 
             {/* User Menu - Desktop */}
             <div className="hidden lg:block relative">
@@ -181,21 +201,32 @@ export default function Navbar() {
             className="lg:hidden overflow-hidden bg-cream border-t border-cream-dark/30"
           >
             <div className="px-4 py-4 space-y-1">
-              {navLinks.map((link) => (
-                <Link
-                  key={link.to}
-                  to={link.to}
-                  className={`flex items-center px-4 py-3.5 rounded-xl text-sm font-medium transition-all duration-300 ${
-                    location.pathname === link.to
-                      ? 'text-chocolate bg-gradient-to-r from-gold/15 to-rose/10 shadow-sm'
-                      : 'text-charcoal/60 hover:text-chocolate hover:bg-cream-dark'
-                  }`}
-                >
-                  {location.pathname === link.to && (
-                    <span className="w-1 h-1 rounded-full bg-gradient-to-r from-gold to-rose mr-3" />
-                  )}
-                  {link.label}
-                </Link>
+              {allNavLinks.map((link) => (
+                user ? (
+                  <Link
+                    key={link.to}
+                    to={link.to}
+                    className={`flex items-center px-4 py-3.5 rounded-xl text-sm font-medium transition-all duration-300 ${
+                      location.pathname === link.to
+                        ? 'text-chocolate bg-gradient-to-r from-gold/15 to-rose/10 shadow-sm'
+                        : 'text-charcoal/60 hover:text-chocolate hover:bg-cream-dark'
+                    }`}
+                  >
+                    {location.pathname === link.to && (
+                      <span className="w-1 h-1 rounded-full bg-gradient-to-r from-gold to-rose mr-3" />
+                    )}
+                    {link.label}
+                  </Link>
+                ) : (
+                  <button
+                    key={link.to}
+                    onClick={handleLockedClick}
+                    className="flex items-center w-full px-4 py-3.5 rounded-xl text-sm font-medium text-charcoal/60 hover:text-chocolate hover:bg-cream-dark transition-all duration-300"
+                  >
+                    {link.label}
+                    <Lock className="w-3 h-3 ml-2 text-warm-gray/50" />
+                  </button>
+                )
               ))}
               <div className="pt-3 mt-3 border-t border-cream-dark/30">
                 {user ? (

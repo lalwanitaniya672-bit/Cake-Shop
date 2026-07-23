@@ -1,7 +1,7 @@
 import { useState } from 'react'
 import { Link, useNavigate, useLocation } from 'react-router-dom'
-import { motion } from 'framer-motion'
-import { Mail, Lock, Eye, EyeOff, ArrowRight } from 'lucide-react'
+import { motion, AnimatePresence } from 'framer-motion'
+import { Mail, Lock, Eye, EyeOff, ArrowRight, Info } from 'lucide-react'
 import useAuthStore from '../stores/authStore'
 
 export default function Login() {
@@ -15,6 +15,7 @@ export default function Login() {
   const location = useLocation()
 
   const redirectTo = location.state?.from || '/'
+  const authMessage = location.state?.message
 
   const handleSubmit = async (e) => {
     e.preventDefault()
@@ -70,6 +71,17 @@ export default function Login() {
               Create one
             </Link>
           </p>
+
+          {authMessage && (
+            <motion.div
+              initial={{ opacity: 0, height: 0 }}
+              animate={{ opacity: 1, height: 'auto' }}
+              className="bg-gold/20 backdrop-blur-sm border border-gold/30 text-white text-sm rounded-xl p-4 mb-6 flex items-center gap-2"
+            >
+              <Info className="w-4 h-4 text-gold shrink-0" />
+              {authMessage}
+            </motion.div>
+          )}
 
           {displayError && (
             <motion.div

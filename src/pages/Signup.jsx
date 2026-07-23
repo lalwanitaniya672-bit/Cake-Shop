@@ -23,38 +23,8 @@ export default function Signup() {
     const result = await signUp(email, password, fullName)
     setLoading(false)
     if (!result.error) {
-      if (result.data?.user?.identities?.length === 0) {
-        setSuccess(false)
-      } else {
-        setSuccess(true)
-      }
+      navigate(redirectTo, { replace: true })
     }
-  }
-
-  if (success) {
-    return (
-      <div className="min-h-screen bg-cream flex items-center justify-center p-8">
-        <motion.div
-          initial={{ opacity: 0, scale: 0.9 }}
-          animate={{ opacity: 1, scale: 1 }}
-          className="text-center max-w-md"
-        >
-          <div className="text-6xl mb-6">💌</div>
-          <h1 className="font-display text-3xl font-bold text-chocolate mb-4">Check Your Email</h1>
-          <p className="text-warm-gray mb-8">
-            We've sent a confirmation link to <strong>{email}</strong>.
-            Please check your inbox and verify your account.
-          </p>
-          <Link
-            to="/login"
-            className="inline-flex items-center gap-2 bg-chocolate text-white px-8 py-3.5 rounded-full text-sm font-semibold hover:bg-chocolate-light transition-all duration-300"
-          >
-            Go to Sign In
-            <ArrowRight className="w-4 h-4" />
-          </Link>
-        </motion.div>
-      </div>
-    )
   }
 
   return (
