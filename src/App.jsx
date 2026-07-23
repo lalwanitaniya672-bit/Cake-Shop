@@ -7,7 +7,6 @@ import WhatsAppButton from './components/WhatsAppButton'
 import ProtectedAdminRoute from './components/ProtectedAdminRoute'
 import { AdminAuthProvider } from './contexts/AdminAuthContext'
 import useAuthStore from './stores/authStore'
-import { isAdminEmail } from './lib/adminSetup'
 
 import Home from './pages/Home'
 import About from './pages/About'
@@ -24,6 +23,7 @@ import Checkout from './pages/Checkout'
 import Reviews from './pages/Reviews'
 import PaymentPage from './pages/PaymentPage'
 import OrderConfirmation from './pages/OrderConfirmation'
+import AdminLogin from './pages/AdminLogin'
 import AdminDashboard from './pages/AdminDashboard'
 import AdminOrders from './pages/AdminOrders'
 import AdminCakes from './pages/AdminCakes'
@@ -101,57 +101,36 @@ export default function App() {
     return <AuthLoadingScreen />
   }
 
-  const userIsAdmin = user && isAdminEmail(user.email)
-
   return (
     <div className="min-h-screen bg-cream">
       <ScrollToTop />
       <AdminAuthProvider>
         <Routes>
-          {/* Login/Signup/Setup - always available */}
+          {/* Public routes */}
           <Route path="/login" element={<Login />} />
           <Route path="/signup" element={user ? <Navigate to="/" replace /> : <Signup />} />
+
+          {/* Admin login — password only, always available */}
+          <Route path="/admin/login" element={<AdminLogin />} />
           <Route path="/setup-admin" element={<SetupAdmin />} />
 
-          {/* Admin Routes */}
-          <Route path="/admin/dashboard" element={
-            <ProtectedAdminRoute><AdminDashboard /></ProtectedAdminRoute>
-          } />
-          <Route path="/admin/orders" element={
-            <ProtectedAdminRoute><AdminOrders /></ProtectedAdminRoute>
-          } />
-          <Route path="/admin/cakes" element={
-            <ProtectedAdminRoute><AdminCakes /></ProtectedAdminRoute>
-          } />
-          <Route path="/admin/reviews" element={
-            <ProtectedAdminRoute><AdminReviews /></ProtectedAdminRoute>
-          } />
-          <Route path="/admin/messages" element={
-            <ProtectedAdminRoute><AdminMessages /></ProtectedAdminRoute>
-          } />
-          <Route path="/admin/custom-orders" element={
-            <ProtectedAdminRoute><AdminCustomOrders /></ProtectedAdminRoute>
-          } />
-          <Route path="/admin/customers" element={
-            <ProtectedAdminRoute><AdminCustomers /></ProtectedAdminRoute>
-          } />
-          <Route path="/admin/settings" element={
-            <ProtectedAdminRoute><AdminSettings /></ProtectedAdminRoute>
-          } />
-          <Route path="/admin/reports" element={
-            <ProtectedAdminRoute><AdminReports /></ProtectedAdminRoute>
-          } />
-          <Route path="/admin" element={
-            <Navigate to="/admin/dashboard" replace />
-          } />
+          {/* Admin panel — protected */}
+          <Route path="/admin/dashboard" element={<ProtectedAdminRoute><AdminDashboard /></ProtectedAdminRoute>} />
+          <Route path="/admin/orders" element={<ProtectedAdminRoute><AdminOrders /></ProtectedAdminRoute>} />
+          <Route path="/admin/cakes" element={<ProtectedAdminRoute><AdminCakes /></ProtectedAdminRoute>} />
+          <Route path="/admin/reviews" element={<ProtectedAdminRoute><AdminReviews /></ProtectedAdminRoute>} />
+          <Route path="/admin/messages" element={<ProtectedAdminRoute><AdminMessages /></ProtectedAdminRoute>} />
+          <Route path="/admin/custom-orders" element={<ProtectedAdminRoute><AdminCustomOrders /></ProtectedAdminRoute>} />
+          <Route path="/admin/customers" element={<ProtectedAdminRoute><AdminCustomers /></ProtectedAdminRoute>} />
+          <Route path="/admin/settings" element={<ProtectedAdminRoute><AdminSettings /></ProtectedAdminRoute>} />
+          <Route path="/admin/reports" element={<ProtectedAdminRoute><AdminReports /></ProtectedAdminRoute>} />
+          <Route path="/admin" element={<Navigate to="/admin/login" replace />} />
 
-          {/* Catch-all: admin users go to admin dashboard, customers see customer site, guests go to login */}
+          {/* Customer catch-all */}
           <Route path="/*" element={
-            userIsAdmin
-              ? <Navigate to="/admin/dashboard" replace />
-              : user
-                ? <ProtectedRoutes />
-                : <Navigate to="/login" state={{ from: location.pathname }} replace />
+            user
+              ? <ProtectedRoutes />
+              : <Navigate to="/login" state={{ from: location.pathname }} replace />
           } />
         </Routes>
       </AdminAuthProvider>

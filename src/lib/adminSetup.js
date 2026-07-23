@@ -1,5 +1,5 @@
-const ADMIN_EMAILS = ['admin@gmail.com']
+export const ADMIN_EMAIL = 'admin@thevelvetcrumb.com'
 
 export function isAdminEmail(email) {
-  return ADMIN_EMAILS.includes(email?.toLowerCase())
+  return email?.toLowerCase() === ADMIN_EMAIL.toLowerCase()
 }

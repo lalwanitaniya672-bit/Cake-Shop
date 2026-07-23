@@ -1,10 +1,8 @@
-import { useState, useEffect } from 'react'
+import { useState } from 'react'
 import { Link, useNavigate, useLocation } from 'react-router-dom'
 import { motion } from 'framer-motion'
 import { Mail, Lock, Eye, EyeOff, ArrowRight } from 'lucide-react'
 import useAuthStore from '../stores/authStore'
-import { useAdminAuth } from '../contexts/AdminAuthContext'
-import { isAdminEmail } from '../lib/adminSetup'
 
 export default function Login() {
   const [email, setEmail] = useState('')
@@ -12,18 +10,11 @@ export default function Login() {
   const [showPassword, setShowPassword] = useState(false)
   const [loading, setLoading] = useState(false)
   const [loginError, setLoginError] = useState('')
-  const { signIn: customerSignIn, signInWithGoogle, error, clearError } = useAuthStore()
-  const { signIn: adminSignIn, admin } = useAdminAuth()
+  const { signIn, signInWithGoogle, error, clearError } = useAuthStore()
   const navigate = useNavigate()
   const location = useLocation()
 
   const redirectTo = location.state?.from || '/'
-
-  useEffect(() => {
-    if (admin) {
-      navigate('/admin/dashboard', { replace: true })
-    }
-  }, [admin, navigate])
 
   const handleSubmit = async (e) => {
     e.preventDefault()
@@ -31,24 +22,13 @@ export default function Login() {
     setLoginError('')
     clearError()
 
-    try {
-      if (isAdminEmail(email)) {
-        await adminSignIn(email, password)
-        navigate('/admin/dashboard', { replace: true })
-      } else {
-        const result = await customerSignIn(email, password)
-        if (!result.error) {
-          navigate(redirectTo, { replace: true })
-        } else {
-          setLoginError(result.error.message || 'Login failed')
-        }
-        setLoading(false)
-      }
-    } catch (err) {
-      console.error('Login error:', err)
-      setLoginError(err.message || 'An error occurred during login')
-      setLoading(false)
+    const result = await signIn(email, password)
+    if (!result.error) {
+      navigate(redirectTo, { replace: true })
+    } else {
+      setLoginError(result.error.message || 'Login failed')
     }
+    setLoading(false)
   }
 
   const handleGoogleSignIn = async () => {
